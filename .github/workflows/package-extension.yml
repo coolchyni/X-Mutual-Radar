@@ -57,7 +57,11 @@ jobs:
           echo "path=$PACKAGE_DIR" >> "$GITHUB_OUTPUT"
 
       - name: Install Chrome
-        uses: browser-actions/setup-chrome@v1
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+          install-dependencies: true
 
       - name: Prepare CRX signing key
         id: key
@@ -84,7 +88,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           PACKAGE_DIR="${{ steps.package_dir.outputs.path }}"
           OUTPUT_CRX="$PWD/release/x-mutual-radar-v${VERSION}.crx"
-          CHROME_BIN="$(command -v chrome || command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)"
+          CHROME_BIN="${{ steps.setup-chrome.outputs.chrome-path }}"
           if [ -z "$CHROME_BIN" ]; then
             echo "Chrome binary not found"
             exit 1
