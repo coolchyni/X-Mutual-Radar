@@ -12,6 +12,7 @@
     badgePosition: "top_right",
     highlightPosts: false,
     showBadgeNumbers: true,
+    showBadgeLabel: true,
     ratioTolerancePct: 30,
     scanScope: "home_timeline"
   };
@@ -38,6 +39,8 @@
       showBadgeNumbersHelp: "Turn off to show labels only",
       highlightPostsTitle: "Highlight posts",
       highlightPostsHelp: "Turn off to remove background highlights",
+      showBadgeLabelTitle: "Show labels",
+      showBadgeLabelHelp: "Turn off to hide 'Mutual' / 'Following' text",
       badgePositionTitle: "Badge position",
       badgePositionHelp: "Right of actions / Below author",
       badgePositionTopRight: "Top-right",
@@ -86,6 +89,8 @@
       showBadgeNumbersHelp: "关闭后仅显示标签",
       highlightPostsTitle: "高亮帖子",
       highlightPostsHelp: "关闭后不高亮背景",
+      showBadgeLabelTitle: "显示标签文字",
+      showBadgeLabelHelp: "关闭后隐藏'互关'、'我关注'等文字",
       badgePositionTitle: "标签位置",
       badgePositionHelp: "按钮右侧 / 作者下方",
       badgePositionTopRight: "右上角",
@@ -134,6 +139,8 @@
       showBadgeNumbersHelp: "オフでラベルのみ表示",
       highlightPostsTitle: "投稿をハイライト",
       highlightPostsHelp: "オフで背景ハイライトを解除",
+      showBadgeLabelTitle: "ラベルを表示",
+      showBadgeLabelHelp: "オフで'相互'などの文字を表示しない",
       badgePositionTitle: "ラベル位置",
       badgePositionHelp: "操作ボタンの右 / 投稿者情報の下",
       badgePositionTopRight: "右上",
@@ -270,6 +277,9 @@
       showBadgeNumbers: overrides && Object.prototype.hasOwnProperty.call(overrides, "showBadgeNumbers")
         ? Boolean(overrides.showBadgeNumbers)
         : DEFAULT_CONFIG.showBadgeNumbers,
+      showBadgeLabel: overrides && Object.prototype.hasOwnProperty.call(overrides, "showBadgeLabel")
+        ? Boolean(overrides.showBadgeLabel)
+        : DEFAULT_CONFIG.showBadgeLabel,
       ratioTolerancePct: clampRatioTolerance(
         overrides && Object.prototype.hasOwnProperty.call(overrides, "ratioTolerancePct")
           ? overrides.ratioTolerancePct

@@ -436,13 +436,25 @@
     return null;
   }
 
-  function getAnnotationLabel(variant, match, showBadgeNumbers, language) {
+  function getAnnotationLabel(variant, match, showBadgeNumbers, showBadgeLabel, language) {
+    if (!showBadgeLabel && !showBadgeNumbers) {
+      return "";
+    }
+
     const labelWithRate = (label) => {
-      if (!showBadgeNumbers || !match || !Number.isFinite(match.ratio)) {
+      const rateHtml = (showBadgeNumbers && match && Number.isFinite(match.ratio))
+        ? `<span class="x-mutual-badge-rate">${shared.formatFollowRate(match.ratio)}</span>`
+        : "";
+      
+      if (!showBadgeLabel) {
+        return rateHtml || "";
+      }
+
+      if (!rateHtml) {
         return label;
       }
 
-      return `${label} <span class="x-mutual-badge-rate">${shared.formatFollowRate(match.ratio)}</span>`;
+      return `${label} ${rateHtml}`;
     };
 
     switch (variant) {
@@ -782,7 +794,7 @@
     return row;
   }
 
-  function applyAnnotation(article, profile, match, variant, showBadgeNumbers, highlightPosts, badgePosition, language) {
+  function applyAnnotation(article, profile, match, variant, showBadgeNumbers, showBadgeLabel, highlightPosts, badgePosition, language) {
     removeAnnotation(article);
 
     if (highlightPosts) {
@@ -808,7 +820,11 @@
     const badge = article.ownerDocument.createElement("span");
     badge.className = "x-mutual-badge";
     badge.dataset.variant = variant;
-    badge.innerHTML = getAnnotationLabel(variant, match, showBadgeNumbers, language);
+    const label = getAnnotationLabel(variant, match, showBadgeNumbers, showBadgeLabel, language);
+    badge.innerHTML = label;
+    if (label === "") {
+      badge.classList.add("x-mutual-badge-dot-only");
+    }
     badge.dataset.tooltip = createTooltipText(profile, match, language);
     attachTooltipHandlers(badge);
     badgeRow.appendChild(badge);
@@ -1678,6 +1694,7 @@
           match,
           annotationVariant,
           this.config.showBadgeNumbers,
+          this.config.showBadgeLabel,
           this.config.highlightPosts,
           this.config.badgePosition,
           this.config.language

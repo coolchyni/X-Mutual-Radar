@@ -13,6 +13,8 @@
     enabledTitle: document.getElementById("enabled-title"),
     showBadgeNumbersToggle: document.getElementById("show-badge-numbers-toggle"),
     showBadgeNumbersTitle: document.getElementById("show-badge-numbers-title"),
+    showBadgeLabelToggle: document.getElementById("show-badge-label-toggle"),
+    showBadgeLabelTitle: document.getElementById("show-badge-label-title"),
     highlightPostsToggle: document.getElementById("highlight-posts-toggle"),
     highlightPostsTitle: document.getElementById("highlight-posts-title"),
     badgePositionSelect: document.getElementById("badge-position-select"),
@@ -63,6 +65,7 @@
     els.languageLabel.textContent = shared.t(language, "languageLabel");
     els.enabledTitle.textContent = shared.t(language, "enabledTitle");
     els.showBadgeNumbersTitle.textContent = shared.t(language, "showBadgeNumbersTitle");
+    els.showBadgeLabelTitle.textContent = shared.t(language, "showBadgeLabelTitle");
     els.highlightPostsTitle.textContent = shared.t(language, "highlightPostsTitle");
     els.badgePositionTitle.textContent = shared.t(language, "badgePositionTitle");
     els.badgePositionTopRightOption.textContent = shared.t(language, "badgePositionTopRight");
@@ -84,6 +87,7 @@
     els.languageSelect.value = shared.normalizeLanguage(config.language);
     els.enabledToggle.checked = Boolean(config.enabled);
     els.showBadgeNumbersToggle.checked = Boolean(config.showBadgeNumbers);
+    els.showBadgeLabelToggle.checked = Boolean(config.showBadgeLabel);
     els.highlightPostsToggle.checked = Boolean(config.highlightPosts);
     els.badgePositionSelect.value = shared.normalizeBadgePosition(config.badgePosition);
   }
@@ -134,6 +138,11 @@
 
   els.showBadgeNumbersToggle.addEventListener("change", async () => {
     await saveConfig({ showBadgeNumbers: els.showBadgeNumbersToggle.checked });
+    await refreshStats();
+  });
+
+  els.showBadgeLabelToggle.addEventListener("change", async () => {
+    await saveConfig({ showBadgeLabel: els.showBadgeLabelToggle.checked });
     await refreshStats();
   });
 

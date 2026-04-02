@@ -114,6 +114,21 @@ article.x-mutual-match.x-mutual-one-way-followed-by {
   font-weight: 500;
 }
 
+.x-mutual-badge-rate:first-child {
+  margin-left: 0;
+}
+
+.x-mutual-badge.x-mutual-badge-dot-only {
+  width: 13px;
+  height: 13px;
+  min-width: 13px;
+  padding: 0;
+  font-size: 8px;
+  line-height: normal;
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+}
+
 .x-mutual-badge[data-variant="one_way_following"] {
   background: linear-gradient(135deg, rgba(45, 212, 191, 0.95), rgba(153, 246, 228, 0.9));
   box-shadow: 
