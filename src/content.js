@@ -519,19 +519,10 @@
       return null;
     }
 
-    let row = actionButton.parentElement.parentElement;
-    while (row && row !== article) {
-      const children = Array.from(row.children);
-      if (children.length >= 2 && children.includes(actionButton.parentElement)) {
-        return {
-          node: row,
-          beforeNode: actionButton.parentElement
-        };
-      }
-      row = row.parentElement;
-    }
-
-    return null;
+    return {
+      node: actionButton.parentElement,
+      beforeNode: actionButton
+    };
   }
 
   function findBadgeAnchor(article, preferredPlacement) {

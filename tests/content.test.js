@@ -525,13 +525,12 @@ test("applyAnnotation places user-cell badges before the follow action button", 
     "zh_CN"
   );
 
-  const row = article.querySelector(".row");
   const actionWrap = article.querySelector(".action-wrap");
   const badgeRow = article.querySelector(".x-mutual-badge-row");
   assert.equal(applied, true);
   assert.ok(badgeRow);
-  assert.equal(badgeRow.parentElement, row);
-  assert.equal(badgeRow.nextElementSibling, actionWrap);
+  assert.equal(badgeRow.parentElement, actionWrap);
+  assert.equal(badgeRow.nextElementSibling, actionWrap.querySelector("button"));
 });
 
 test("parseProfileData reads mutual markers and counts from hover-card text", () => {
