@@ -45,7 +45,7 @@ jobs:
         run: |
           PACKAGE_DIR="$RUNNER_TEMP/x-mutual-radar"
           mkdir -p "$PACKAGE_DIR"
-          rsync -a \
+          rsync -a --relative \
             manifest.json \
             _locales \
             popup \
