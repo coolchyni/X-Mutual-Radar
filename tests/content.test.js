@@ -109,7 +109,6 @@ test("applyAnnotation appends a badge with tooltip", () => {
     true, // showBadgeNumbers
     true, // showBadgeLabel
     "12", // badgeFontSize
-    true, // highlightPosts
     "header", // badgePosition
     "en" // language
   );
@@ -124,7 +123,6 @@ test("applyAnnotation appends a badge with tooltip", () => {
   assert.match(badge.dataset.tooltip, /Following:/);
   assert.match(badge.dataset.tooltip, /Relation: Mutual/);
   assert.match(badge.dataset.tooltip, /Follow rate: 1.10/);
-  assert.equal(article.classList.contains("x-mutual-match"), true);
 });
 
 test("showFloatingTooltip mounts a body-level tooltip overlay", () => {
@@ -152,7 +150,6 @@ test("showFloatingTooltip mounts a body-level tooltip overlay", () => {
     true,
     true,
     "12",
-    true,
     "header",
     "en"
   );
@@ -190,7 +187,6 @@ test("applyAnnotation uses distinct variant styles for one-way following", () =>
     true,
     true,
     "12",
-    true,
     "header",
     "en"
   );
@@ -199,7 +195,6 @@ test("applyAnnotation uses distinct variant styles for one-way following", () =>
   assert.ok(badge);
   assert.equal(badge.textContent, "Following 1.11");
   assert.equal(badge.dataset.variant, "one_way_following");
-  assert.equal(article.classList.contains("x-mutual-one-way-following"), true);
 });
 
 test("applyAnnotation can hide badge numbers for one-way followed-by", () => {
@@ -223,7 +218,6 @@ test("applyAnnotation can hide badge numbers for one-way followed-by", () => {
     false,
     true,
     "12",
-    true,
     "header",
     "en"
   );
@@ -254,7 +248,6 @@ test("applyAnnotation localizes japanese badge text", () => {
     true,
     true,
     "12",
-    true,
     "header",
     "ja"
   );
@@ -266,7 +259,7 @@ test("applyAnnotation localizes japanese badge text", () => {
   assert.match(badge.dataset.tooltip, /フォロー率: 1.11/);
 });
 
-test("applyAnnotation can disable post highlight while keeping the badge", () => {
+test("applyAnnotation keeps the badge without adding highlight classes", () => {
   const dom = new JSDOM(`<article data-testid="tweet"></article>`);
   const article = dom.window.document.querySelector("article");
 
@@ -287,7 +280,6 @@ test("applyAnnotation can disable post highlight while keeping the badge", () =>
     true,
     true,
     "12",
-    false,
     "header",
     "en"
   );
@@ -323,6 +315,7 @@ test("removeAnnotation clears the badge row when no badges remain", () => {
     "mutual",
     true,
     true,
+    "12",
     "header",
     "en"
   );
@@ -362,7 +355,6 @@ test("applyAnnotation can place the badge below the author row", () => {
     true,
     true,
     "12",
-    true,
     "header",
     "en"
   );
@@ -411,7 +403,6 @@ test("applyAnnotation places user-cell header badges below the identity row", ()
     true,
     true,
     "12",
-    true,
     "header",
     "zh_CN"
   );
@@ -464,7 +455,6 @@ test("applyAnnotation keeps list-page header badges between the header row and b
     true,
     true,
     "12",
-    true,
     "header",
     "zh_CN"
   );
@@ -511,7 +501,6 @@ test("applyAnnotation anchors top-right badges after the top-right button group"
     true,
     true,
     "12",
-    true,
     "corner",
     "en"
   );
@@ -565,6 +554,7 @@ test("applyAnnotation appends the top-right badge after the more button wrapper"
     "mutual",
     true,
     true,
+    "12",
     "top_right",
     "en"
   );
@@ -602,7 +592,6 @@ test("applyAnnotation skips top-right placement until the action group exists", 
     true,
     true,
     "12",
-    true,
     "top_right",
     "en"
   );
@@ -646,7 +635,6 @@ test("applyAnnotation places user-cell badges after the follow action button", (
     true,
     true,
     "12",
-    true,
     "top_right",
     "zh_CN"
   );
@@ -698,7 +686,6 @@ test("applyAnnotation places user-cell badges between the follow button and more
     true,
     true,
     "12",
-    true,
     "top_right",
     "zh_CN"
   );

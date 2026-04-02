@@ -2,7 +2,6 @@ const DEFAULT_CONFIG = {
   enabled: true,
   language: "en",
   badgePosition: "corner",
-  highlightPosts: false,
   showBadgeNumbers: true,
   ratioTolerancePct: 30,
   scanScope: "home_timeline"

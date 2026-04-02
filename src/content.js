@@ -397,10 +397,7 @@
       return;
     }
 
-    article.classList.remove("x-mutual-match");
     article.classList.remove("x-mutual-has-corner-badge");
-    article.classList.remove("x-mutual-one-way-following");
-    article.classList.remove("x-mutual-one-way-followed-by");
     delete article.dataset.xMutualReason;
     delete article.dataset.xMutualVariant;
     const badge = article.querySelector(BADGE_SELECTOR);
@@ -810,17 +807,8 @@
     return row;
   }
 
-  function applyAnnotation(article, profile, match, variant, showBadgeNumbers, showBadgeLabel, badgeFontSize, highlightPosts, badgePosition, language) {
+  function applyAnnotation(article, profile, match, variant, showBadgeNumbers, showBadgeLabel, badgeFontSize, badgePosition, language) {
     removeAnnotation(article);
-
-    if (highlightPosts) {
-      article.classList.add("x-mutual-match");
-      if (variant === "one_way_following") {
-        article.classList.add("x-mutual-one-way-following");
-      } else if (variant === "one_way_followed_by") {
-        article.classList.add("x-mutual-one-way-followed-by");
-      }
-    }
 
     if (badgePosition !== "header") {
       article.classList.add("x-mutual-has-corner-badge");
@@ -1703,7 +1691,6 @@
           this.config.showBadgeNumbers,
           this.config.showBadgeLabel,
           this.config.badgeFontSize,
-          this.config.highlightPosts,
           this.config.badgePosition,
           this.config.language
         );

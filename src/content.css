@@ -1,33 +1,6 @@
-article.x-mutual-match {
-  position: relative !important;
-  outline: 1.5px solid #ff7a18 !important;
-  outline-offset: 2px;
-  background:
-    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 34%),
-    linear-gradient(135deg, rgba(255, 122, 24, 0.05), rgba(255, 189, 89, 0.02)) !important;
-  border-radius: 18px;
-  box-shadow: 0 0 0 1px rgba(255, 122, 24, 0.22), 0 10px 22px rgba(255, 122, 24, 0.12);
-}
-
 article.x-mutual-has-corner-badge {
   position: relative !important;
   isolation: isolate;
-}
-
-article.x-mutual-match.x-mutual-one-way-following {
-  outline-color: #2dd4bf !important;
-  background:
-    radial-gradient(circle at top right, rgba(45, 212, 191, 0.12), transparent 34%),
-    linear-gradient(135deg, rgba(45, 212, 191, 0.06), rgba(20, 184, 166, 0.02)) !important;
-  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.22), 0 10px 22px rgba(20, 184, 166, 0.12);
-}
-
-article.x-mutual-match.x-mutual-one-way-followed-by {
-  outline-color: #60a5fa !important;
-  background:
-    radial-gradient(circle at top right, rgba(96, 165, 250, 0.12), transparent 34%),
-    linear-gradient(135deg, rgba(96, 165, 250, 0.06), rgba(59, 130, 246, 0.02)) !important;
-  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.22), 0 10px 22px rgba(59, 130, 246, 0.12);
 }
 
 .x-mutual-badge-row {

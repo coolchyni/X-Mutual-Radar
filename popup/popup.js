@@ -15,8 +15,6 @@
     showBadgeNumbersTitle: document.getElementById("show-badge-numbers-title"),
     showBadgeLabelToggle: document.getElementById("show-badge-label-toggle"),
     showBadgeLabelTitle: document.getElementById("show-badge-label-title"),
-    highlightPostsToggle: document.getElementById("highlight-posts-toggle"),
-    highlightPostsTitle: document.getElementById("highlight-posts-title"),
     badgePositionSelect: document.getElementById("badge-position-select"),
     badgePositionTitle: document.getElementById("badge-position-title"),
     badgePositionTopRightOption: document.getElementById("badge-position-top-right-option"),
@@ -38,7 +36,6 @@
     els.enabledTitle.textContent = shared.t(language, "enabledTitle");
     els.showBadgeNumbersTitle.textContent = shared.t(language, "showBadgeNumbersTitle");
     els.showBadgeLabelTitle.textContent = shared.t(language, "showBadgeLabelTitle");
-    els.highlightPostsTitle.textContent = shared.t(language, "highlightPostsTitle");
     els.badgePositionTitle.textContent = shared.t(language, "badgePositionTitle");
     els.badgePositionTopRightOption.textContent = shared.t(language, "badgePositionTopRight");
     els.badgePositionHeaderOption.textContent = shared.t(language, "badgePositionHeader");
@@ -56,7 +53,6 @@
     els.showBadgeNumbersToggle.checked = Boolean(config.showBadgeNumbers);
     els.badgeFontSizeSelect.value = config.badgeFontSize || "12";
     els.showBadgeLabelToggle.checked = Boolean(config.showBadgeLabel);
-    els.highlightPostsToggle.checked = Boolean(config.highlightPosts);
     els.badgePositionSelect.value = shared.normalizeBadgePosition(config.badgePosition);
   }
 
@@ -82,10 +78,6 @@
 
   els.showBadgeLabelToggle.addEventListener("change", async () => {
     await saveConfig({ showBadgeLabel: els.showBadgeLabelToggle.checked });
-  });
-
-  els.highlightPostsToggle.addEventListener("change", async () => {
-    await saveConfig({ highlightPosts: els.highlightPostsToggle.checked });
   });
 
   els.badgePositionSelect.addEventListener("change", async () => {

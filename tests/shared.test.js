@@ -80,14 +80,12 @@ test("mergeConfig clamps ratio tolerance", () => {
     language: "zh-CN",
     badgePosition: "nope",
     ratioTolerancePct: 31,
-    highlightPosts: 0,
     showBadgeNumbers: 0
   });
 
   assert.equal(config.language, "zh_CN");
   assert.equal(config.badgePosition, "top_right");
   assert.equal(config.ratioTolerancePct, 30);
-  assert.equal(config.highlightPosts, false);
   assert.equal(config.showBadgeNumbers, false);
 });
 
@@ -98,10 +96,11 @@ test("normalizeBadgePosition accepts top right", () => {
   assert.equal(shared.normalizeBadgePosition("other"), "top_right");
 });
 
-test("mergeConfig defaults highlightPosts to false", () => {
+test("mergeConfig keeps badge display defaults", () => {
   const config = shared.mergeConfig({});
   assert.equal(config.language, "en");
-  assert.equal(config.highlightPosts, false);
+  assert.equal(config.showBadgeNumbers, true);
+  assert.equal(config.showBadgeLabel, true);
 });
 
 test("normalizeLanguage supports english, chinese, and japanese", () => {

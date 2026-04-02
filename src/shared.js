@@ -11,7 +11,6 @@
     language: "en",
     badgePosition: "top_right",
     badgeFontSize: "12",
-    highlightPosts: false,
     showBadgeNumbers: true,
     showBadgeLabel: true,
     ratioTolerancePct: 30,
@@ -38,8 +37,6 @@
       enabledHelp: "Turn off to hide page annotations",
       showBadgeNumbersTitle: "Show follow rate",
       showBadgeNumbersHelp: "Turn off to show labels only",
-      highlightPostsTitle: "Highlight posts",
-      highlightPostsHelp: "Turn off to remove background highlights",
       showBadgeLabelTitle: "Show labels",
       showBadgeLabelHelp: "Turn off to hide 'Mutual' / 'Following' text",
       badgePositionTitle: "Badge position",
@@ -87,8 +84,6 @@
       enabledHelp: "关闭后隐藏页面标注",
       showBadgeNumbersTitle: "显示关注率",
       showBadgeNumbersHelp: "关闭后仅显示标签",
-      highlightPostsTitle: "高亮帖子",
-      highlightPostsHelp: "关闭后不高亮背景",
       showBadgeLabelTitle: "显示标签文字",
       showBadgeLabelHelp: "关闭后隐藏'互关'、'我关注'等文字",
       badgePositionTitle: "标签位置",
@@ -136,8 +131,6 @@
       enabledHelp: "オフでページのラベルを非表示",
       showBadgeNumbersTitle: "比率を表示",
       showBadgeNumbersHelp: "オフでラベルのみ表示",
-      highlightPostsTitle: "投稿をハイライト",
-      highlightPostsHelp: "オフで背景ハイライトを解除",
       showBadgeLabelTitle: "ラベルを表示",
       showBadgeLabelHelp: "オフで'相互'などの文字を表示しない",
       badgePositionTitle: "ラベル位置",
@@ -269,9 +262,6 @@
           ? overrides.badgePosition
           : DEFAULT_CONFIG.badgePosition
       ),
-      highlightPosts: overrides && Object.prototype.hasOwnProperty.call(overrides, "highlightPosts")
-        ? Boolean(overrides.highlightPosts)
-        : DEFAULT_CONFIG.highlightPosts,
       showBadgeNumbers: overrides && Object.prototype.hasOwnProperty.call(overrides, "showBadgeNumbers")
         ? Boolean(overrides.showBadgeNumbers)
         : DEFAULT_CONFIG.showBadgeNumbers,
