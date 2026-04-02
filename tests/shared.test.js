@@ -85,7 +85,7 @@ test("mergeConfig clamps ratio tolerance", () => {
   });
 
   assert.equal(config.language, "zh_CN");
-  assert.equal(config.badgePosition, "corner");
+  assert.equal(config.badgePosition, "top_right");
   assert.equal(config.ratioTolerancePct, 30);
   assert.equal(config.highlightPosts, false);
   assert.equal(config.showBadgeNumbers, false);
@@ -93,8 +93,9 @@ test("mergeConfig clamps ratio tolerance", () => {
 
 test("normalizeBadgePosition accepts top right", () => {
   assert.equal(shared.normalizeBadgePosition("top_right"), "top_right");
+  assert.equal(shared.normalizeBadgePosition("corner"), "top_right");
   assert.equal(shared.normalizeBadgePosition("header"), "header");
-  assert.equal(shared.normalizeBadgePosition("other"), "corner");
+  assert.equal(shared.normalizeBadgePosition("other"), "top_right");
 });
 
 test("mergeConfig defaults highlightPosts to false", () => {

@@ -108,7 +108,7 @@ test("applyAnnotation appends a badge with tooltip", () => {
     "mutual",
     true,
     true,
-    "corner",
+    "header",
     "en"
   );
 
@@ -117,7 +117,7 @@ test("applyAnnotation appends a badge with tooltip", () => {
   assert.ok(badge);
   assert.ok(badgeRow);
   assert.equal(badge.parentElement, badgeRow);
-  assert.equal(badgeRow.dataset.placement, "corner");
+  assert.equal(badgeRow.dataset.placement, "header");
   assert.equal(badge.textContent, "Mutual 1.10");
   assert.match(badge.dataset.tooltip, /Following:/);
   assert.match(badge.dataset.tooltip, /Relation: Mutual/);
@@ -149,7 +149,7 @@ test("showFloatingTooltip mounts a body-level tooltip overlay", () => {
     "mutual",
     true,
     true,
-    "corner",
+    "header",
     "en"
   );
 
@@ -185,7 +185,7 @@ test("applyAnnotation uses distinct variant styles for one-way following", () =>
     "one_way_following",
     true,
     true,
-    "corner",
+    "header",
     "en"
   );
 
@@ -216,7 +216,7 @@ test("applyAnnotation can hide badge numbers for one-way followed-by", () => {
     "one_way_followed_by",
     false,
     true,
-    "corner",
+    "header",
     "en"
   );
 
@@ -245,7 +245,7 @@ test("applyAnnotation localizes japanese badge text", () => {
     "mutual",
     true,
     true,
-    "corner",
+    "header",
     "ja"
   );
 
@@ -276,7 +276,7 @@ test("applyAnnotation can disable post highlight while keeping the badge", () =>
     "mutual",
     true,
     false,
-    "corner",
+    "header",
     "en"
   );
 
@@ -358,6 +358,134 @@ test("applyAnnotation can place the badge below the author row", () => {
   assert.ok(badgeRow);
   assert.equal(badgeRow.dataset.placement, "header");
   assert.equal(header.nextElementSibling, badgeRow);
+});
+
+test("applyAnnotation anchors corner badges before the top-right button", () => {
+  const dom = new JSDOM(`
+    <article data-testid="tweet">
+      <button data-follow-action="true">follow</button>
+      <div class="top-right-row">
+        <div class="top-right-actions">
+          <div><button aria-label="Grok 操作">grok</button></div>
+          <div><button data-testid="caret" aria-label="More">more</button></div>
+        </div>
+      </div>
+    </article>
+  `);
+  const article = dom.window.document.querySelector("article");
+
+  content.__test.applyAnnotation(
+    article,
+    {
+      isFollowing: true,
+      followsYou: true,
+      followingCount: 1000,
+      followerCount: 1000,
+      source: "page_store_selector",
+      fetchedAt: Date.now()
+    },
+    {
+      ratio: 1
+    },
+    "mutual",
+    true,
+    true,
+    "corner",
+    "en"
+  );
+
+  const badgeRow = article.querySelector(".x-mutual-badge-row");
+  const group = article.querySelector(".top-right-actions");
+  const moreWrapper = article.querySelector('[data-testid="caret"]').parentElement;
+  assert.ok(badgeRow);
+  assert.equal(badgeRow.dataset.placement, "top_right");
+  assert.equal(badgeRow.parentElement, group);
+  assert.equal(badgeRow.nextElementSibling, moreWrapper);
+});
+
+test("applyAnnotation replaces the top-right button position when requested", () => {
+  const dom = new JSDOM(`
+    <article data-testid="tweet">
+      <button data-follow-action="true">follow</button>
+      <div class="top-right-row">
+        <div class="top-right-actions">
+          <div><button aria-label="Grok 操作">grok</button></div>
+          <div><button data-testid="caret" aria-label="More">more</button></div>
+        </div>
+      </div>
+    </article>
+  `, { pretendToBeVisual: true });
+  const article = dom.window.document.querySelector("article");
+  const group = article.querySelector(".top-right-actions");
+  const moreWrapper = article.querySelector('[data-testid="caret"]').parentElement;
+  group.getBoundingClientRect = () => ({
+    width: 92,
+    height: 32,
+    top: 0,
+    left: 0,
+    right: 92,
+    bottom: 32
+  });
+
+  content.__test.applyAnnotation(
+    article,
+    {
+      isFollowing: true,
+      followsYou: true,
+      followingCount: 1000,
+      followerCount: 1000,
+      source: "page_store_selector",
+      fetchedAt: Date.now()
+    },
+    {
+      ratio: 1
+    },
+    "mutual",
+    true,
+    true,
+    "top_right",
+    "en"
+  );
+
+  const badgeRow = article.querySelector(".x-mutual-badge-row");
+  assert.ok(badgeRow);
+  assert.equal(badgeRow.dataset.placement, "top_right");
+  assert.equal(badgeRow.parentElement, group);
+  assert.equal(badgeRow.nextElementSibling, moreWrapper);
+  assert.equal(article.classList.contains("x-mutual-top-right-replaced"), false);
+});
+
+test("applyAnnotation skips top-right placement until the action group exists", () => {
+  const dom = new JSDOM(`
+    <article data-testid="tweet">
+      <div>body</div>
+    </article>
+  `);
+  const article = dom.window.document.querySelector("article");
+
+  const applied = content.__test.applyAnnotation(
+    article,
+    {
+      isFollowing: true,
+      followsYou: true,
+      followingCount: 1000,
+      followerCount: 1000,
+      source: "page_store_selector",
+      fetchedAt: Date.now()
+    },
+    {
+      ratio: 1
+    },
+    "mutual",
+    true,
+    true,
+    "top_right",
+    "en"
+  );
+
+  assert.equal(applied, false);
+  assert.equal(article.querySelector(".x-mutual-badge-row"), null);
+  assert.equal(article.querySelector(".x-mutual-badge"), null);
 });
 
 test("parseProfileData reads mutual markers and counts from hover-card text", () => {

@@ -9,7 +9,7 @@
   const DEFAULT_CONFIG = {
     enabled: true,
     language: "en",
-    badgePosition: "corner",
+    badgePosition: "top_right",
     highlightPosts: false,
     showBadgeNumbers: true,
     ratioTolerancePct: 30,
@@ -39,8 +39,7 @@
       highlightPostsTitle: "Highlight posts",
       highlightPostsHelp: "Turn off to remove background highlights",
       badgePositionTitle: "Badge position",
-      badgePositionHelp: "Top-right gap / Top-right / Below author",
-      badgePositionCorner: "Top-right gap",
+      badgePositionHelp: "Left of more / Below author",
       badgePositionTopRight: "Top-right",
       badgePositionHeader: "Below author row",
       statsTitle: "Page status",
@@ -88,8 +87,7 @@
       highlightPostsTitle: "高亮帖子",
       highlightPostsHelp: "关闭后不高亮背景",
       badgePositionTitle: "标签位置",
-      badgePositionHelp: "右上空白区 / 右上角 / 作者下方",
-      badgePositionCorner: "右上角空白区",
+      badgePositionHelp: "更多左边 / 作者下方",
       badgePositionTopRight: "右上角",
       badgePositionHeader: "作者信息下方",
       statsTitle: "当前页状态",
@@ -137,8 +135,7 @@
       highlightPostsTitle: "投稿をハイライト",
       highlightPostsHelp: "オフで背景ハイライトを解除",
       badgePositionTitle: "ラベル位置",
-      badgePositionHelp: "右上余白 / 右上 / 投稿者情報の下",
-      badgePositionCorner: "右上の余白",
+      badgePositionHelp: "もっと見るの左 / 投稿者情報の下",
       badgePositionTopRight: "右上",
       badgePositionHeader: "投稿者情報の下",
       statsTitle: "現在のページ",
@@ -202,11 +199,11 @@
       return "header";
     }
 
-    if (value === "top_right") {
+    if (value === "top_right" || value === "corner") {
       return "top_right";
     }
 
-    return "corner";
+    return "top_right";
   }
 
   function normalizeLanguage(value) {

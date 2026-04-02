@@ -17,7 +17,6 @@
     highlightPostsTitle: document.getElementById("highlight-posts-title"),
     badgePositionSelect: document.getElementById("badge-position-select"),
     badgePositionTitle: document.getElementById("badge-position-title"),
-    badgePositionCornerOption: document.getElementById("badge-position-corner-option"),
     badgePositionTopRightOption: document.getElementById("badge-position-top-right-option"),
     badgePositionHeaderOption: document.getElementById("badge-position-header-option"),
     statsTitle: document.getElementById("stats-title"),
@@ -66,7 +65,6 @@
     els.showBadgeNumbersTitle.textContent = shared.t(language, "showBadgeNumbersTitle");
     els.highlightPostsTitle.textContent = shared.t(language, "highlightPostsTitle");
     els.badgePositionTitle.textContent = shared.t(language, "badgePositionTitle");
-    els.badgePositionCornerOption.textContent = shared.t(language, "badgePositionCorner");
     els.badgePositionTopRightOption.textContent = shared.t(language, "badgePositionTopRight");
     els.badgePositionHeaderOption.textContent = shared.t(language, "badgePositionHeader");
     els.statsTitle.textContent = shared.t(language, "statsTitle");

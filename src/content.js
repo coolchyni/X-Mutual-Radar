@@ -15,6 +15,7 @@
   const ARTICLE_SELECTOR = ITEM_SELECTOR; // Global alias
   const BADGE_SELECTOR = ".x-mutual-badge";
   const BADGE_ROW_SELECTOR = ".x-mutual-badge-row";
+  const TOP_RIGHT_ANCHOR_CLASS = "x-mutual-top-right-anchor";
   const ACTION_CONTROL_SELECTOR = [
     '[data-testid="reply"]',
     '[data-testid="retweet"]',
@@ -24,6 +25,13 @@
     '[data-testid="bookmark"]',
     '[data-testid="removeBookmark"]',
     '[data-testid="share"]'
+  ].join(", ");
+  const TOP_RIGHT_GROUP_BUTTON_LIMIT = 3;
+  const TOP_RIGHT_BUTTON_SELECTOR = [
+    '[data-testid="caret"]',
+    'button[aria-label="More"]',
+    'button[aria-label="更多"]',
+    'button[aria-label="さらに表示"]'
   ].join(", ");
   const BUTTON_TEXTS = new Set(["following", "正在关注", "フォロー中"]);
   const HOVER_CARD_SELECTOR = '[data-testid="HoverCard"], [data-testid="hoverCard"], div[role="dialog"]';
@@ -398,6 +406,11 @@
     if (badgeRow && badgeRow.childElementCount === 0) {
       badgeRow.remove();
     }
+
+    const topRightAnchors = article.querySelectorAll(`.${TOP_RIGHT_ANCHOR_CLASS}`);
+    for (const anchor of topRightAnchors) {
+      anchor.classList.remove(TOP_RIGHT_ANCHOR_CLASS);
+    }
   }
 
   function getAnnotationVariant(profile, match) {
@@ -437,15 +450,77 @@
     }
   }
 
+  function findTopRightActionGroup(article) {
+    if (!article) {
+      return null;
+    }
+
+    const moreButton = article.querySelector(TOP_RIGHT_BUTTON_SELECTOR);
+    if (!moreButton) {
+      return null;
+    }
+
+    let bestGroup = moreButton.parentElement || moreButton;
+    let current = bestGroup;
+    while (current && current !== article) {
+      const buttonCount = current.querySelectorAll("button").length;
+      const hasMoreButton = Boolean(current.querySelector(TOP_RIGHT_BUTTON_SELECTOR));
+      const hasActionControls = Boolean(current.querySelector(ACTION_CONTROL_SELECTOR));
+      if (!hasMoreButton || hasActionControls) {
+        break;
+      }
+
+      if (buttonCount >= 2 && buttonCount <= TOP_RIGHT_GROUP_BUTTON_LIMIT) {
+        bestGroup = current;
+        break;
+      }
+
+      if (buttonCount > TOP_RIGHT_GROUP_BUTTON_LIMIT) {
+        break;
+      }
+
+      current = current.parentElement;
+    }
+
+    return bestGroup;
+  }
+
+  function findTopRightInsertTarget(group) {
+    if (!group) {
+      return null;
+    }
+
+    const moreButton = group.querySelector(TOP_RIGHT_BUTTON_SELECTOR);
+    if (!moreButton) {
+      return null;
+    }
+
+    let current = moreButton;
+    while (current && current.parentElement && current.parentElement !== group) {
+      current = current.parentElement;
+    }
+
+    return current && current !== group ? current : moreButton;
+  }
+
   function findBadgeAnchor(article, preferredPlacement) {
     if (!article) {
       return null;
     }
 
-    if (preferredPlacement === "corner" || preferredPlacement === "top_right") {
+    const topRightGroup = findTopRightActionGroup(article);
+    if (preferredPlacement === "top_right" && topRightGroup) {
+      return {
+        node: topRightGroup,
+        beforeNode: findTopRightInsertTarget(topRightGroup),
+        placement: "top_right"
+      };
+    }
+
+    if (preferredPlacement === "top_right") {
       return {
         node: article,
-        placement: preferredPlacement
+        placement: "top_right"
       };
     }
 
@@ -473,7 +548,7 @@
       if (bestParent) {
         return {
           node: bestParent,
-          placement: "corner"
+          placement: "top_right"
         };
       }
     }
@@ -506,13 +581,13 @@
       const fallbackControl = actionControls[actionControls.length - 1];
       return {
         node: fallbackControl.closest('[role="group"]') || fallbackControl.parentElement,
-        placement: "corner"
+        placement: "top_right"
       };
     }
 
     return {
       node: article.firstElementChild || null,
-      placement: preferredPlacement === "header" ? "header" : preferredPlacement
+      placement: preferredPlacement === "header" ? "header" : "top_right"
     };
   }
 
@@ -531,11 +606,25 @@
 
     const anchor = findBadgeAnchor(article, preferredPlacement);
     const anchorNode = anchor && anchor.node;
+    const anchorBeforeNode = anchor && anchor.beforeNode;
     const placement = anchor && anchor.placement ? anchor.placement : preferredPlacement;
     row.dataset.placement = placement;
 
     if (placement === "corner" || placement === "top_right") {
-      article.appendChild(row);
+      if (placement === "top_right" && (!anchorNode || anchorNode === article)) {
+        return null;
+      }
+
+      if (anchorNode && anchorNode !== article && anchorNode.parentNode) {
+        anchorNode.classList.add(TOP_RIGHT_ANCHOR_CLASS);
+        if (anchorBeforeNode && anchorBeforeNode.parentNode === anchorNode) {
+          anchorNode.insertBefore(row, anchorBeforeNode);
+        } else {
+          anchorNode.insertBefore(row, anchorNode.firstChild);
+        }
+      } else {
+        article.appendChild(row);
+      }
     } else if (anchorNode && anchorNode !== article && anchorNode.parentNode) {
       anchorNode.insertAdjacentElement("afterend", row);
     } else if (article.firstChild) {
@@ -566,6 +655,10 @@
     article.dataset.xMutualVariant = variant;
     const preferredPlacement = badgePosition === "header" ? "header" : shared.normalizeBadgePosition(badgePosition);
     const badgeRow = ensureBadgeRow(article, preferredPlacement);
+    if (!badgeRow) {
+      return false;
+    }
+
     const badge = article.ownerDocument.createElement("span");
     badge.className = "x-mutual-badge";
     badge.dataset.variant = variant;
@@ -573,6 +666,7 @@
     badge.dataset.tooltip = createTooltipText(profile, match, language);
     attachTooltipHandlers(badge);
     badgeRow.appendChild(badge);
+    return true;
   }
 
   function waitForDocumentBody(doc, win) {
@@ -1375,7 +1469,7 @@
       const annotationVariant = getAnnotationVariant(profile, match);
 
       if (this.config.enabled && annotationVariant) {
-        applyAnnotation(
+        const applied = applyAnnotation(
           article,
           profile,
           match,
@@ -1385,6 +1479,23 @@
           this.config.badgePosition,
           this.config.language
         );
+        if (!applied) {
+          article.dataset.xMutualProcessed = "pending";
+          const retryId = this.window.setTimeout(() => {
+            if (!article.isConnected) {
+              return;
+            }
+
+            delete article.dataset.xMutualProcessed;
+            this.articleQueue.add(article);
+            void this.flushQueue();
+          }, 120);
+          if (retryId && typeof retryId === "object" && typeof retryId.unref === "function") {
+            retryId.unref();
+          }
+          this.refreshCounters();
+          return;
+        }
       } else {
         removeAnnotation(article);
       }

@@ -39,23 +39,28 @@ article.x-mutual-match.x-mutual-one-way-followed-by {
 }
 
 .x-mutual-badge-row[data-placement="corner"] {
-  position: absolute;
-  top: 10px;
-  right: 76px;
-  z-index: 12;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  vertical-align: middle;
   justify-content: flex-end;
-  max-width: calc(100% - 180px);
+  max-width: calc(100% - 16px);
   margin: 0;
 }
 
 .x-mutual-badge-row[data-placement="top_right"] {
-  position: absolute;
-  top: 10px;
-  right: 14px;
-  z-index: 12;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  vertical-align: middle;
   justify-content: flex-end;
-  max-width: calc(100% - 96px);
+  max-width: calc(100% - 16px);
   margin: 0;
+}
+
+.x-mutual-top-right-anchor {
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .x-mutual-badge {
