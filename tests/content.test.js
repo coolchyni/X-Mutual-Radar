@@ -488,6 +488,52 @@ test("applyAnnotation skips top-right placement until the action group exists", 
   assert.equal(article.querySelector(".x-mutual-badge"), null);
 });
 
+test("applyAnnotation places user-cell badges before the follow action button", () => {
+  const dom = new JSDOM(`
+    <div data-testid="UserCell">
+      <div class="outer">
+        <div class="avatar"></div>
+        <div class="content">
+          <div class="row">
+            <div class="identity">user info</div>
+            <div class="action-wrap"><button aria-label="回关 @gym231">回关</button></div>
+            <div class="meta">more text</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `);
+  const article = dom.window.document.querySelector('[data-testid="UserCell"]');
+
+  const applied = content.__test.applyAnnotation(
+    article,
+    {
+      isFollowing: false,
+      followsYou: true,
+      followingCount: 800,
+      followerCount: 1000,
+      source: "page_store_selector",
+      fetchedAt: Date.now()
+    },
+    {
+      ratio: 0.8
+    },
+    "one_way_followed_by",
+    true,
+    true,
+    "top_right",
+    "zh_CN"
+  );
+
+  const row = article.querySelector(".row");
+  const actionWrap = article.querySelector(".action-wrap");
+  const badgeRow = article.querySelector(".x-mutual-badge-row");
+  assert.equal(applied, true);
+  assert.ok(badgeRow);
+  assert.equal(badgeRow.parentElement, row);
+  assert.equal(badgeRow.nextElementSibling, actionWrap);
+});
+
 test("parseProfileData reads mutual markers and counts from hover-card text", () => {
   const dom = new JSDOM(`
     <div role="dialog">

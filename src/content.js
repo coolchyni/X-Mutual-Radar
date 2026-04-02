@@ -42,6 +42,8 @@
   const FOLLOWING_LABELS = ["Following", "正在关注", "フォロー中"];
   const FOLLOWER_LABELS = ["Followers", "关注者", "フォロワー"];
   const FOLLOWS_YOU_REGEX = /Follows you|关注了你|あなたをフォロー/i;
+  const USER_CELL_SELECTOR = '[data-testid="UserCell"], [data-testid="cellInnerDiv"]';
+  const RELATION_ACTION_REGEX = /关注|正在关注|回关|フォロー|フォロー中|Follow|Following|Follow back/i;
 
   function createPointerLikeEvent(win, eventName, init) {
     const PointerCtor = win.PointerEvent || win.MouseEvent;
@@ -503,9 +505,48 @@
     return current && current !== group ? current : moreButton;
   }
 
+  function findUserCellActionAnchor(article) {
+    if (!article || !(article.matches && article.matches(USER_CELL_SELECTOR))) {
+      return null;
+    }
+
+    const actionButton = Array.from(article.querySelectorAll("button[aria-label]")).find((button) => {
+      const label = button.getAttribute("aria-label") || "";
+      return RELATION_ACTION_REGEX.test(label);
+    });
+
+    if (!actionButton || !actionButton.parentElement) {
+      return null;
+    }
+
+    let row = actionButton.parentElement.parentElement;
+    while (row && row !== article) {
+      const children = Array.from(row.children);
+      if (children.length >= 2 && children.includes(actionButton.parentElement)) {
+        return {
+          node: row,
+          beforeNode: actionButton.parentElement
+        };
+      }
+      row = row.parentElement;
+    }
+
+    return null;
+  }
+
   function findBadgeAnchor(article, preferredPlacement) {
     if (!article) {
       return null;
+    }
+
+    if (preferredPlacement === "top_right") {
+      const userCellAnchor = findUserCellActionAnchor(article);
+      if (userCellAnchor) {
+        return {
+          ...userCellAnchor,
+          placement: "top_right"
+        };
+      }
     }
 
     const topRightGroup = findTopRightActionGroup(article);
