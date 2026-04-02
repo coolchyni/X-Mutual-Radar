@@ -41,6 +41,7 @@
   const BRIDGE_REQUEST_SOURCE = "x-mutual-content";
   const LOOKUP_USERS_TYPE = "LOOKUP_USERS";
   const LOOKUP_USERS_RESULT_TYPE = "LOOKUP_USERS_RESULT";
+  const NAVIGATION_CHANGED_TYPE = "NAVIGATION_CHANGED";
   const FOLLOWING_LABELS = ["Following", "正在关注", "フォロー中"];
   const FOLLOWER_LABELS = ["Followers", "关注者", "フォロワー"];
   const FOLLOWS_YOU_REGEX = /Follows you|关注了你|あなたをフォロー/i;
@@ -612,15 +613,31 @@
       return null;
     }
 
-    const actionAnchor = findUserCellActionAnchor(article);
-    if (actionAnchor && actionAnchor.node && actionAnchor.node.parentElement && actionAnchor.node.parentElement !== article) {
-      return actionAnchor.node.parentElement;
-    }
-
     const candidateLinks = Array.from(article.querySelectorAll('a[href^="/"][role="link"], a[href^="https://x.com/"][role="link"]'));
-    const textLink = candidateLinks.find((link) => /@/.test(link.textContent || ""));
-    if (textLink) {
-      return textLink.closest("div") || textLink;
+    const handleLink = candidateLinks.find((link) => /@/.test(link.textContent || ""));
+    if (handleLink) {
+      let bestContainer = handleLink.closest("div") || handleLink;
+      let current = bestContainer;
+      while (current && current !== article) {
+        const links = Array.from(current.querySelectorAll('a[href^="/"][role="link"], a[href^="https://x.com/"][role="link"]'));
+        const hasHandle = links.some((link) => /@/.test(link.textContent || ""));
+        const hasName = links.some((link) => {
+          const text = (link.textContent || "").trim();
+          return Boolean(text) && !/@/.test(text);
+        });
+        const hasButtons = Boolean(current.querySelector("button"));
+        const directChildren = Array.from(current.children || []);
+        const hasButtonSibling = directChildren.some((child) => child !== bestContainer && Boolean(child.querySelector && child.querySelector("button")));
+        if (hasHandle && hasName && !hasButtons) {
+          bestContainer = current;
+        }
+        if (hasHandle && hasName && hasButtonSibling) {
+          return current;
+        }
+        current = current.parentElement;
+      }
+
+      return bestContainer;
     }
 
     return null;
@@ -1374,7 +1391,6 @@
       this.inflightHandleLookups = new Map();
       this.lookupRequestId = 0;
       this.lastKnownUrl = win.location.href;
-      this.locationPollId = null;
       this.pendingRescanTimeouts = new Set();
       this.stats = {
         liveAuthors: 0,
@@ -1430,6 +1446,11 @@
 
       if (event.data.type === "TIMELINE_PAYLOAD") {
         void this.handleTimelinePayload(event.data);
+        return;
+      }
+
+      if (event.data.type === NAVIGATION_CHANGED_TYPE) {
+        this.handleLocationChange(event.data.url);
       }
     }
 
@@ -1548,16 +1569,10 @@
     installNavigationObserver() {
       this.window.addEventListener("popstate", this.boundLocationChangeHandler);
       this.window.addEventListener("hashchange", this.boundLocationChangeHandler);
-      this.locationPollId = this.window.setInterval(() => {
-        this.handleLocationChange();
-      }, 300);
-      if (this.locationPollId && typeof this.locationPollId === "object" && typeof this.locationPollId.unref === "function") {
-        this.locationPollId.unref();
-      }
     }
 
-    handleLocationChange() {
-      const nextUrl = this.window.location.href;
+    handleLocationChange(nextUrlOverride) {
+      const nextUrl = nextUrlOverride || this.window.location.href;
       if (nextUrl === this.lastKnownUrl) {
         return;
       }

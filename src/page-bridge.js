@@ -9,11 +9,13 @@
   const RESPONSE_SOURCE = "x-mutual-bridge";
   const LOOKUP_USERS_TYPE = "LOOKUP_USERS";
   const LOOKUP_USERS_RESULT_TYPE = "LOOKUP_USERS_RESULT";
+  const NAVIGATION_CHANGED_TYPE = "NAVIGATION_CHANGED";
   const STORE_HOST_SELECTOR = 'article[data-testid="tweet"], [data-testid="UserCell"], [data-testid="cellInnerDiv"]';
   const USERS_MODULE_ID = "897618";
 
   let webpackRequire = null;
   let storeRef = null;
+  let lastNavigationUrl = window.location.href;
 
   function normalizeHandle(handle) {
     if (!handle) {
@@ -132,6 +134,46 @@
       })
       .filter(Boolean);
   }
+
+  function dispatchNavigationChanged(reason) {
+    const nextUrl = window.location.href;
+    if (nextUrl === lastNavigationUrl) {
+      return;
+    }
+
+    lastNavigationUrl = nextUrl;
+    window.postMessage(
+      {
+        source: RESPONSE_SOURCE,
+        type: NAVIGATION_CHANGED_TYPE,
+        url: nextUrl,
+        reason
+      },
+      window.location.origin
+    );
+  }
+
+  const originalPushState = history.pushState.bind(history);
+  history.pushState = function patchedPushState(...args) {
+    const result = originalPushState(...args);
+    dispatchNavigationChanged("pushState");
+    return result;
+  };
+
+  const originalReplaceState = history.replaceState.bind(history);
+  history.replaceState = function patchedReplaceState(...args) {
+    const result = originalReplaceState(...args);
+    dispatchNavigationChanged("replaceState");
+    return result;
+  };
+
+  window.addEventListener("popstate", () => {
+    dispatchNavigationChanged("popstate");
+  });
+
+  window.addEventListener("hashchange", () => {
+    dispatchNavigationChanged("hashchange");
+  });
 
   window.addEventListener("message", (event) => {
     if (event.source !== window || !event.data || event.data.source !== REQUEST_SOURCE) {

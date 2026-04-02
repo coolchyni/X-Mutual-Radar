@@ -423,6 +423,63 @@ test("applyAnnotation places user-cell header badges below the identity row", ()
   assert.equal(row.nextElementSibling, badgeRow);
 });
 
+test("applyAnnotation keeps list-page header badges between the header row and bio", () => {
+  const dom = new JSDOM(`
+    <div data-testid="UserCell">
+      <div class="outer">
+        <div class="content">
+          <div class="row">
+            <div class="identity">
+              <a role="link" href="/Christine722496">Christine</a>
+              <a role="link" href="/Christine722496">@Christine722496</a>
+              <span>关注了你</span>
+            </div>
+            <div class="actions">
+              <div class="follow-wrap"><button aria-label="正在关注 @Christine722496">正在关注</button></div>
+              <div class="more-wrap"><button aria-label="更多">更多</button></div>
+            </div>
+          </div>
+          <div class="bio">喜欢阅读、电影、旅行</div>
+        </div>
+      </div>
+    </div>
+  `, { url: "https://x.com/chyni/followers" });
+  const article = dom.window.document.querySelector('[data-testid="UserCell"]');
+
+  content.__test.applyAnnotation(
+    article,
+    {
+      isFollowing: true,
+      followsYou: true,
+      followingCount: 1050,
+      followerCount: 1000,
+      source: "page_store_selector",
+      fetchedAt: Date.now()
+    },
+    {
+      ratio: 1.05,
+      shouldHighlight: true
+    },
+    "mutual",
+    true,
+    true,
+    "12",
+    true,
+    "header",
+    "zh_CN"
+  );
+
+  const row = article.querySelector(".row");
+  const bio = article.querySelector(".bio");
+  const actions = article.querySelector(".actions");
+  const badgeRow = article.querySelector(".x-mutual-badge-row");
+  assert.ok(badgeRow);
+  assert.equal(badgeRow.dataset.placement, "header");
+  assert.equal(row.nextElementSibling, badgeRow);
+  assert.equal(badgeRow.nextElementSibling, bio);
+  assert.notEqual(actions.nextElementSibling, badgeRow);
+});
+
 test("applyAnnotation anchors top-right badges after the top-right button group", () => {
   const dom = new JSDOM(`
     <article data-testid="tweet">
