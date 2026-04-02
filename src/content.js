@@ -1377,11 +1377,6 @@
       this.locationPollId = null;
       this.pendingRescanTimeouts = new Set();
       this.stats = {
-        scannedArticles: 0,
-        highlightedArticles: 0,
-        insufficientArticles: 0,
-        notMutualArticles: 0,
-        ratioOutOfRangeArticles: 0,
         liveAuthors: 0,
         timelineResponsesSeen: 0,
         timelineProfilesExtracted: 0,
@@ -1531,15 +1526,6 @@
           return;
         }
 
-        if (message.type === "GET_SCAN_STATS") {
-          sendResponse({
-            ok: true,
-            supported: isSupportedXPath(this.window.location.href),
-            stats: this.getStats()
-          });
-          return;
-        }
-
         if (message.type === "SET_ENABLED") {
           this.config.enabled = Boolean(message.enabled);
           void this.rescan(false).then(() => sendResponse({ ok: true, stats: this.getStats() }));
@@ -1670,7 +1656,6 @@
 
       this.processing = false;
       this.stats.lastScanAt = Date.now();
-      this.refreshCounters();
     }
 
     async processArticle(article, forceRefresh) {
@@ -1683,12 +1668,10 @@
       const handle = extractHandleFromArticle(article);
       if (!handle) {
         if (scheduleArticleRetry(this, article, 180)) {
-          this.refreshCounters();
           return;
         }
 
         removeAnnotation(article);
-        this.refreshCounters();
         return;
       }
 
@@ -1711,7 +1694,6 @@
         );
         if (!applied) {
           scheduleArticleRetry(this, article, 120);
-          this.refreshCounters();
           return;
         }
       } else {
@@ -1722,7 +1704,6 @@
       article.dataset.xMutualRetryCount = "0";
       article.dataset.xMutualHandle = handle;
       article.dataset.xMutualReason = match.reason || "";
-      this.refreshCounters();
     }
 
     async getAuthorProfile(handle, article, forceRefresh) {
@@ -1814,15 +1795,6 @@
       await this.flushQueue();
     }
 
-    refreshCounters() {
-      this.stats.scannedArticles = this.document.querySelectorAll(`${ITEM_SELECTOR}[data-x-mutual-processed="true"]`).length;
-      this.stats.highlightedArticles = this.document.querySelectorAll(`${ITEM_SELECTOR}.x-mutual-match`).length;
-      this.stats.insufficientArticles = this.document.querySelectorAll(`${ITEM_SELECTOR}[data-x-mutual-reason="missing_counts"]`).length;
-      this.stats.notMutualArticles = this.document.querySelectorAll(`${ITEM_SELECTOR}[data-x-mutual-reason="not_mutual"]`).length;
-      this.stats.ratioOutOfRangeArticles = this.document.querySelectorAll(`${ITEM_SELECTOR}[data-x-mutual-reason="ratio_out_of_range"]`).length;
-      this.stats.liveAuthors = this.profileStore.size;
-    }
-
     getStats() {
       return {
         ...this.stats,
@@ -1837,11 +1809,6 @@
         removeAnnotation(article);
       }
 
-      this.stats.scannedArticles = 0;
-      this.stats.highlightedArticles = 0;
-      this.stats.insufficientArticles = 0;
-      this.stats.notMutualArticles = 0;
-      this.stats.ratioOutOfRangeArticles = 0;
       this.enqueueArticles(articles, forceRefresh);
       await this.flushQueue();
     }

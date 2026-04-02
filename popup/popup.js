@@ -22,34 +22,8 @@
     badgePositionTopRightOption: document.getElementById("badge-position-top-right-option"),
     badgePositionHeaderOption: document.getElementById("badge-position-header-option"),
     badgeFontSizeSelect: document.getElementById("badge-font-size-select"),
-    badgeFontSizeTitle: document.getElementById("badge-font-size-title"),
-    statsTitle: document.getElementById("stats-title"),
-    pageStatus: document.getElementById("page-status"),
-    scannedLabel: document.getElementById("scanned-label"),
-    scannedCount: document.getElementById("scanned-count"),
-    liveAuthorsLabel: document.getElementById("live-authors-label"),
-    liveCount: document.getElementById("live-count"),
-    notMutualLabel: document.getElementById("not-mutual-label"),
-    notMutualCount: document.getElementById("not-mutual-count")
+    badgeFontSizeTitle: document.getElementById("badge-font-size-title")
   };
-
-  async function getActiveTab() {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    return tabs[0] || null;
-  }
-
-  async function sendToActiveTab(message) {
-    const tab = await getActiveTab();
-    if (!tab || !tab.id || !tab.url || !tab.url.startsWith("https://x.com/")) {
-      return null;
-    }
-
-    try {
-      return await chrome.tabs.sendMessage(tab.id, message);
-    } catch (error) {
-      return null;
-    }
-  }
 
   function renderTexts(language) {
     document.documentElement.lang = shared.getLocaleTag(language);
@@ -69,10 +43,6 @@
     els.badgePositionTopRightOption.textContent = shared.t(language, "badgePositionTopRight");
     els.badgePositionHeaderOption.textContent = shared.t(language, "badgePositionHeader");
     els.badgeFontSizeTitle.textContent = shared.t(language, "badgeFontSizeTitle");
-    els.statsTitle.textContent = shared.t(language, "statsTitle");
-    els.scannedLabel.textContent = shared.t(language, "scannedPosts");
-    els.liveAuthorsLabel.textContent = shared.t(language, "liveAuthors");
-    els.notMutualLabel.textContent = shared.t(language, "notMutual");
 
     els.languageSelect.options[0].textContent = shared.t(language, "languageEnglish");
     els.languageSelect.options[1].textContent = shared.t(language, "languageChinese");
@@ -90,27 +60,6 @@
     els.badgePositionSelect.value = shared.normalizeBadgePosition(config.badgePosition);
   }
 
-  function renderStats(payload, language) {
-    if (!payload || !payload.ok || !payload.supported) {
-      els.pageStatus.textContent = shared.t(language, "pageStatusDisconnected");
-      els.scannedCount.textContent = "-";
-      els.liveCount.textContent = "-";
-      els.notMutualCount.textContent = "-";
-      return;
-    }
-
-    els.pageStatus.textContent = shared.t(language, "pageStatusConnected");
-    els.scannedCount.textContent = String(payload.stats.scannedArticles || 0);
-    els.liveCount.textContent = String(payload.stats.liveAuthors || 0);
-    els.notMutualCount.textContent = String(payload.stats.notMutualArticles || 0);
-  }
-
-  async function refreshStats() {
-    const config = shared.mergeConfig(await chrome.storage.sync.get(shared.DEFAULT_CONFIG));
-    const payload = await sendToActiveTab({ type: "GET_SCAN_STATS" });
-    renderStats(payload, config.language);
-  }
-
   async function saveConfig(patch) {
     const current = shared.mergeConfig(await chrome.storage.sync.get(shared.DEFAULT_CONFIG));
     const next = shared.mergeConfig({ ...current, ...patch });
@@ -120,46 +69,36 @@
   }
 
   els.enabledToggle.addEventListener("change", async () => {
-    const next = await saveConfig({ enabled: els.enabledToggle.checked });
-    await sendToActiveTab({ type: "SET_ENABLED", enabled: next.enabled });
-    await refreshStats();
+    await saveConfig({ enabled: els.enabledToggle.checked });
   });
 
   els.languageSelect.addEventListener("change", async () => {
     await saveConfig({ language: els.languageSelect.value });
-    await refreshStats();
   });
 
   els.showBadgeNumbersToggle.addEventListener("change", async () => {
     await saveConfig({ showBadgeNumbers: els.showBadgeNumbersToggle.checked });
-    await refreshStats();
   });
 
   els.showBadgeLabelToggle.addEventListener("change", async () => {
     await saveConfig({ showBadgeLabel: els.showBadgeLabelToggle.checked });
-    await refreshStats();
   });
 
   els.highlightPostsToggle.addEventListener("change", async () => {
     await saveConfig({ highlightPosts: els.highlightPostsToggle.checked });
-    await refreshStats();
   });
 
   els.badgePositionSelect.addEventListener("change", async () => {
     await saveConfig({ badgePosition: els.badgePositionSelect.value });
-    await refreshStats();
   });
 
   els.badgeFontSizeSelect.addEventListener("change", async () => {
     await saveConfig({ badgeFontSize: els.badgeFontSizeSelect.value });
-    await refreshStats();
   });
 
   async function boot() {
     const config = shared.mergeConfig(await chrome.storage.sync.get(shared.DEFAULT_CONFIG));
     renderConfig(config);
-    els.pageStatus.textContent = shared.t(config.language, "pageStatusChecking");
-    await refreshStats();
   }
 
   void boot();
