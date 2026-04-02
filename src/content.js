@@ -442,7 +442,7 @@
         return label;
       }
 
-      return `${label} ${shared.formatFollowRate(match.ratio)}`;
+      return `${label} <span class="x-mutual-badge-rate">${shared.formatFollowRate(match.ratio)}</span>`;
     };
 
     switch (variant) {
@@ -808,7 +808,7 @@
     const badge = article.ownerDocument.createElement("span");
     badge.className = "x-mutual-badge";
     badge.dataset.variant = variant;
-    badge.textContent = getAnnotationLabel(variant, match, showBadgeNumbers, language);
+    badge.innerHTML = getAnnotationLabel(variant, match, showBadgeNumbers, language);
     badge.dataset.tooltip = createTooltipText(profile, match, language);
     attachTooltipHandlers(badge);
     badgeRow.appendChild(badge);

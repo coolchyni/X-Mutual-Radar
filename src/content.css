@@ -89,41 +89,47 @@ article.x-mutual-match.x-mutual-one-way-followed-by {
   justify-content: center;
   max-width: 100%;
   min-width: fit-content;
-  padding: 5px 12px;
+  padding: 4px 10px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 999px;
   background: linear-gradient(135deg, rgba(255, 122, 24, 0.92), rgba(255, 186, 74, 0.88));
   color: #000;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.25;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   white-space: nowrap;
   overflow: visible;
   box-shadow: 
-    0 4px 12px rgba(255, 122, 24, 0.25),
+    0 4px 12px rgba(255, 122, 24, 0.2),
     inset 0 1px 1px rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(12px);
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+.x-mutual-badge-rate {
+  font-size: 12px;
+  margin-left: 5px;
+  opacity: 1;
+  font-weight: 500;
+}
+
 .x-mutual-badge[data-variant="one_way_following"] {
-  background: linear-gradient(135deg, rgba(45, 212, 191, 0.92), rgba(153, 246, 228, 0.88));
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.95), rgba(153, 246, 228, 0.9));
   box-shadow: 
-    0 4px 12px rgba(45, 212, 191, 0.22),
+    0 4px 12px rgba(45, 212, 191, 0.18),
     inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 .x-mutual-badge[data-variant="one_way_followed_by"] {
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.92), rgba(147, 197, 253, 0.88));
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.95), rgba(147, 197, 253, 0.9));
   box-shadow: 
-    0 4px 12px rgba(96, 165, 250, 0.22),
+    0 4px 12px rgba(96, 165, 250, 0.18),
     inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 .x-mutual-badge:hover {
-  transform: translateY(-1px) scale(1.04);
+  transform: translateY(-1px) scale(1.05);
   z-index: 10001;
   box-shadow: 
     0 6px 16px rgba(0, 0, 0, 0.15),
@@ -132,10 +138,6 @@ article.x-mutual-match.x-mutual-one-way-followed-by {
 
 .x-mutual-badge[data-tooltip] {
   cursor: help;
-}
-
-.x-mutual-badge:hover {
-  z-index: 10001;
 }
 
 .x-mutual-floating-tooltip {
