@@ -106,10 +106,12 @@ test("applyAnnotation appends a badge with tooltip", () => {
       ratio: 1.1
     },
     "mutual",
-    true,
-    true,
-    "header",
-    "en"
+    true, // showBadgeNumbers
+    true, // showBadgeLabel
+    "12", // badgeFontSize
+    true, // highlightPosts
+    "header", // badgePosition
+    "en" // language
   );
 
   const badge = article.querySelector(".x-mutual-badge");
@@ -149,6 +151,8 @@ test("showFloatingTooltip mounts a body-level tooltip overlay", () => {
     "mutual",
     true,
     true,
+    "12",
+    true,
     "header",
     "en"
   );
@@ -185,6 +189,8 @@ test("applyAnnotation uses distinct variant styles for one-way following", () =>
     "one_way_following",
     true,
     true,
+    "12",
+    true,
     "header",
     "en"
   );
@@ -216,6 +222,8 @@ test("applyAnnotation can hide badge numbers for one-way followed-by", () => {
     "one_way_followed_by",
     false,
     true,
+    "12",
+    true,
     "header",
     "en"
   );
@@ -244,6 +252,8 @@ test("applyAnnotation localizes japanese badge text", () => {
     },
     "mutual",
     true,
+    true,
+    "12",
     true,
     "header",
     "ja"
@@ -275,6 +285,8 @@ test("applyAnnotation can disable post highlight while keeping the badge", () =>
     },
     "mutual",
     true,
+    true,
+    "12",
     false,
     "header",
     "en"
@@ -349,6 +361,8 @@ test("applyAnnotation can place the badge below the author row", () => {
     "mutual",
     true,
     true,
+    "12",
+    true,
     "header",
     "en"
   );
@@ -396,6 +410,8 @@ test("applyAnnotation places user-cell header badges below the identity row", ()
     "mutual",
     true,
     true,
+    "12",
+    true,
     "header",
     "zh_CN"
   );
@@ -437,17 +453,19 @@ test("applyAnnotation anchors top-right badges after the top-right button group"
     "mutual",
     true,
     true,
+    "12",
+    true,
     "corner",
     "en"
   );
 
   const badgeRow = article.querySelector(".x-mutual-badge-row");
   const group = article.querySelector(".top-right-actions");
-  const moreWrapper = article.querySelector('[data-testid="caret"]').parentElement;
   assert.ok(badgeRow);
   assert.equal(badgeRow.dataset.placement, "top_right");
   assert.equal(badgeRow.parentElement, group);
-  assert.equal(badgeRow.previousElementSibling, moreWrapper);
+  // Using prepend logic: badgeRow is now the first child
+  assert.equal(group.firstElementChild, badgeRow);
 });
 
 test("applyAnnotation appends the top-right badge after the more button wrapper", () => {
@@ -498,7 +516,8 @@ test("applyAnnotation appends the top-right badge after the more button wrapper"
   assert.ok(badgeRow);
   assert.equal(badgeRow.dataset.placement, "top_right");
   assert.equal(badgeRow.parentElement, group);
-  assert.equal(badgeRow.previousElementSibling, moreWrapper);
+  // Using prepend logic: badgeRow is now the first child
+  assert.equal(group.firstElementChild, badgeRow);
   assert.equal(article.classList.contains("x-mutual-top-right-replaced"), false);
 });
 
@@ -525,6 +544,8 @@ test("applyAnnotation skips top-right placement until the action group exists", 
     },
     "mutual",
     true,
+    true,
+    "12",
     true,
     "top_right",
     "en"
@@ -567,6 +588,8 @@ test("applyAnnotation places user-cell badges after the follow action button", (
     },
     "one_way_followed_by",
     true,
+    true,
+    "12",
     true,
     "top_right",
     "zh_CN"
@@ -615,6 +638,8 @@ test("applyAnnotation places user-cell badges between the follow button and more
     "one_way_followed_by",
     true,
     true,
+    "12",
+    true,
     "top_right",
     "zh_CN"
   );
@@ -626,8 +651,9 @@ test("applyAnnotation places user-cell badges between the follow button and more
   assert.equal(applied, true);
   assert.ok(badgeRow);
   assert.equal(badgeRow.parentElement, actions);
-  assert.equal(badgeRow.previousElementSibling, followWrap);
-  assert.equal(badgeRow.nextElementSibling, moreWrap);
+  // Using prepend logic: badgeRow is now the first child
+  assert.equal(badgeRow.nextElementSibling, followWrap);
+  assert.equal(followWrap.nextElementSibling, moreWrap);
 });
 
 test("parseProfileData reads mutual markers and counts from hover-card text", () => {

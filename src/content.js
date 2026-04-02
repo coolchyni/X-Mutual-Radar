@@ -748,10 +748,9 @@
 
     const anchor = findBadgeAnchor(article, preferredPlacement);
     const anchorNode = anchor && anchor.node;
-    const anchorBeforeNode = anchor && anchor.beforeNode;
-    const anchorAfterNode = anchor && anchor.afterNode;
     const anchorClass = anchor && anchor.anchorClass;
     const placement = anchor && anchor.placement ? anchor.placement : preferredPlacement;
+    
     row.dataset.placement = placement;
     if (anchorClass === USER_CELL_ACTION_ANCHOR_CLASS) {
       row.classList.add(USER_CELL_BADGE_ROW_CLASS);
@@ -764,24 +763,7 @@
 
       if (anchorNode && anchorNode !== article && anchorNode.parentNode) {
         anchorNode.classList.add(anchorClass || TOP_RIGHT_ANCHOR_CLASS);
-        
-        // Always try to prepend to be the first child (far left in row layout)
-        if (anchorClass === USER_CELL_ACTION_ANCHOR_CLASS) {
-          if (anchorAfterNode && anchorAfterNode.parentNode === anchorNode) {
-            anchorNode.insertBefore(row, anchorAfterNode);
-          } else {
-            anchorNode.prepend(row);
-          }
-        } else {
-          // For tweets or fallback placements
-          if (anchorBeforeNode && anchorBeforeNode.parentNode === anchorNode) {
-            anchorNode.insertBefore(row, anchorBeforeNode);
-          } else if (anchorAfterNode && anchorAfterNode.parentNode === anchorNode) {
-            anchorNode.insertBefore(row, anchorAfterNode);
-          } else {
-            anchorNode.prepend(row);
-          }
-        }
+        anchorNode.prepend(row);
       } else {
         article.prepend(row);
       }
@@ -1872,7 +1854,9 @@
       removeAnnotation,
       parseProfileData,
       extractProfilesFromNetworkPayload,
-      extractProfileHintsFromNetworkPayload
+      extractProfileHintsFromNetworkPayload,
+      findUserCellActionAnchor,
+      isRelationshipListItem
     }
   };
 });
