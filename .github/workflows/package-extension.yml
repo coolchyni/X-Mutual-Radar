@@ -1,0 +1,129 @@
+name: Package Extension
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'release*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Read extension version
+        id: version
+        run: echo "version=$(node -p \"require('./manifest.json').version\")" >> "$GITHUB_OUTPUT"
+
+      - name: Build zip package
+        run: bash release/package-extension.sh
+
+      - name: Prepare extension directory
+        id: package_dir
+        shell: bash
+        run: |
+          PACKAGE_DIR="$RUNNER_TEMP/x-mutual-radar"
+          mkdir -p "$PACKAGE_DIR"
+          rsync -a \
+            manifest.json \
+            _locales \
+            popup \
+            src \
+            assets/icons \
+            README.md \
+            assets/store/privacy-policy.md \
+            "$PACKAGE_DIR"/
+          echo "path=$PACKAGE_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Prepare CRX signing key
+        id: key
+        shell: bash
+        env:
+          EXTENSION_PRIVATE_KEY: ${{ secrets.EXTENSION_PRIVATE_KEY }}
+        run: |
+          KEY_PATH="$RUNNER_TEMP/x-mutual-radar.pem"
+          if [ -n "$EXTENSION_PRIVATE_KEY" ]; then
+            if printf '%s' "$EXTENSION_PRIVATE_KEY" | grep -q "BEGIN .*PRIVATE KEY"; then
+              printf '%s\n' "$EXTENSION_PRIVATE_KEY" > "$KEY_PATH"
+            else
+              printf '%s' "$EXTENSION_PRIVATE_KEY" | base64 --decode > "$KEY_PATH"
+            fi
+            echo "has_key=true" >> "$GITHUB_OUTPUT"
+            echo "path=$KEY_PATH" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_key=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build crx package
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          PACKAGE_DIR="${{ steps.package_dir.outputs.path }}"
+          OUTPUT_CRX="$PWD/release/x-mutual-radar-v${VERSION}.crx"
+          CHROME_BIN="$(command -v chrome || command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)"
+          if [ -z "$CHROME_BIN" ]; then
+            echo "Chrome binary not found"
+            exit 1
+          fi
+
+          if [ "${{ steps.key.outputs.has_key }}" = "true" ]; then
+            "$CHROME_BIN" --no-sandbox --pack-extension="$PACKAGE_DIR" --pack-extension-key="${{ steps.key.outputs.path }}"
+            KEY_MODE="stable"
+          else
+            "$CHROME_BIN" --no-sandbox --pack-extension="$PACKAGE_DIR"
+            KEY_MODE="ephemeral"
+          fi
+
+          mv "${PACKAGE_DIR}.crx" "$OUTPUT_CRX"
+          rm -f "${PACKAGE_DIR}.pem"
+
+          {
+            echo "## Extension artifacts"
+            echo ""
+            echo "- ZIP: \`release/x-mutual-radar-v${VERSION}.zip\`"
+            echo "- CRX: \`release/x-mutual-radar-v${VERSION}.crx\`"
+            echo "- CRX signing key: \`${KEY_MODE}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: x-mutual-radar-v${{ steps.version.outputs.version }}
+          path: |
+            release/x-mutual-radar-v${{ steps.version.outputs.version }}.zip
+            release/x-mutual-radar-v${{ steps.version.outputs.version }}.crx
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/release')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            release/x-mutual-radar-v${{ steps.version.outputs.version }}.zip
+            release/x-mutual-radar-v${{ steps.version.outputs.version }}.crx
