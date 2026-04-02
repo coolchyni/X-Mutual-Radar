@@ -11,7 +11,7 @@
     api.boot();
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function createContent(shared) {
-  const ITEM_SELECTOR = 'article[data-testid="tweet"], [data-testid="UserCell"], [data-testid="cellInnerDiv"]';
+  const ITEM_SELECTOR = 'article[data-testid="tweet"], [data-testid="UserCell"]';
   const ARTICLE_SELECTOR = ITEM_SELECTOR; // Global alias
   const BADGE_SELECTOR = ".x-mutual-badge";
   const BADGE_ROW_SELECTOR = ".x-mutual-badge-row";
@@ -824,6 +824,8 @@
     badge.innerHTML = label;
     if (label === "") {
       badge.classList.add("x-mutual-badge-dot-only");
+    } else if (showBadgeLabel && showBadgeNumbers && match && Number.isFinite(match.ratio)) {
+      badge.classList.add("has-label");
     }
     badge.dataset.tooltip = createTooltipText(profile, match, language);
     attachTooltipHandlers(badge);
