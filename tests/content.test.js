@@ -360,7 +360,54 @@ test("applyAnnotation can place the badge below the author row", () => {
   assert.equal(header.nextElementSibling, badgeRow);
 });
 
-test("applyAnnotation anchors corner badges before the top-right button", () => {
+test("applyAnnotation places user-cell header badges below the identity row", () => {
+  const dom = new JSDOM(`
+    <div data-testid="UserCell">
+      <div class="outer">
+        <div class="content">
+          <div class="row">
+            <div class="identity">
+              <a role="link" href="/gym231">かっちゃん</a>
+              <a role="link" href="/gym231">@gym231</a>
+            </div>
+            <div class="action-wrap"><button aria-label="回关 @gym231">回关</button></div>
+          </div>
+          <div class="bio">bio</div>
+        </div>
+      </div>
+    </div>
+  `, { url: "https://x.com/chyni/followers" });
+  const article = dom.window.document.querySelector('[data-testid="UserCell"]');
+
+  content.__test.applyAnnotation(
+    article,
+    {
+      isFollowing: true,
+      followsYou: true,
+      followingCount: 1230,
+      followerCount: 1000,
+      source: "page_store_selector",
+      fetchedAt: Date.now()
+    },
+    {
+      ratio: 1.23,
+      shouldHighlight: true
+    },
+    "mutual",
+    true,
+    true,
+    "header",
+    "zh_CN"
+  );
+
+  const row = article.querySelector(".row");
+  const badgeRow = article.querySelector(".x-mutual-badge-row");
+  assert.ok(badgeRow);
+  assert.equal(badgeRow.dataset.placement, "header");
+  assert.equal(row.nextElementSibling, badgeRow);
+});
+
+test("applyAnnotation anchors top-right badges after the top-right button group", () => {
   const dom = new JSDOM(`
     <article data-testid="tweet">
       <button data-follow-action="true">follow</button>
@@ -400,10 +447,10 @@ test("applyAnnotation anchors corner badges before the top-right button", () => 
   assert.ok(badgeRow);
   assert.equal(badgeRow.dataset.placement, "top_right");
   assert.equal(badgeRow.parentElement, group);
-  assert.equal(badgeRow.nextElementSibling, moreWrapper);
+  assert.equal(badgeRow.previousElementSibling, moreWrapper);
 });
 
-test("applyAnnotation replaces the top-right button position when requested", () => {
+test("applyAnnotation appends the top-right badge after the more button wrapper", () => {
   const dom = new JSDOM(`
     <article data-testid="tweet">
       <button data-follow-action="true">follow</button>
@@ -451,7 +498,7 @@ test("applyAnnotation replaces the top-right button position when requested", ()
   assert.ok(badgeRow);
   assert.equal(badgeRow.dataset.placement, "top_right");
   assert.equal(badgeRow.parentElement, group);
-  assert.equal(badgeRow.nextElementSibling, moreWrapper);
+  assert.equal(badgeRow.previousElementSibling, moreWrapper);
   assert.equal(article.classList.contains("x-mutual-top-right-replaced"), false);
 });
 
@@ -488,7 +535,7 @@ test("applyAnnotation skips top-right placement until the action group exists", 
   assert.equal(article.querySelector(".x-mutual-badge"), null);
 });
 
-test("applyAnnotation places user-cell badges before the follow action button", () => {
+test("applyAnnotation places user-cell badges after the follow action button", () => {
   const dom = new JSDOM(`
     <div data-testid="UserCell">
       <div class="outer">
@@ -502,7 +549,7 @@ test("applyAnnotation places user-cell badges before the follow action button", 
         </div>
       </div>
     </div>
-  `);
+  `, { url: "https://x.com/chyni/followers" });
   const article = dom.window.document.querySelector('[data-testid="UserCell"]');
 
   const applied = content.__test.applyAnnotation(
@@ -530,7 +577,57 @@ test("applyAnnotation places user-cell badges before the follow action button", 
   assert.equal(applied, true);
   assert.ok(badgeRow);
   assert.equal(badgeRow.parentElement, actionWrap);
-  assert.equal(badgeRow.nextElementSibling, actionWrap.querySelector("button"));
+  assert.equal(badgeRow.classList.contains("x-mutual-user-cell-badge-row"), true);
+  assert.equal(actionWrap.classList.contains("x-mutual-user-cell-anchor"), true);
+});
+
+test("applyAnnotation places user-cell badges between the follow button and more button", () => {
+  const dom = new JSDOM(`
+    <div data-testid="UserCell">
+      <div class="outer">
+        <div class="content">
+          <div class="row">
+            <div class="identity">user info</div>
+            <div class="actions">
+              <div class="follow-wrap"><button aria-label="回关 @gym231">回关</button></div>
+              <div class="more-wrap"><button aria-label="更多">更多</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `, { url: "https://x.com/chyni/followers" });
+  const article = dom.window.document.querySelector('[data-testid="UserCell"]');
+
+  const applied = content.__test.applyAnnotation(
+    article,
+    {
+      isFollowing: false,
+      followsYou: true,
+      followingCount: 860,
+      followerCount: 1000,
+      source: "page_store_selector",
+      fetchedAt: Date.now()
+    },
+    {
+      ratio: 0.86
+    },
+    "one_way_followed_by",
+    true,
+    true,
+    "top_right",
+    "zh_CN"
+  );
+
+  const actions = article.querySelector(".actions");
+  const followWrap = article.querySelector(".follow-wrap");
+  const moreWrap = article.querySelector(".more-wrap");
+  const badgeRow = article.querySelector(".x-mutual-badge-row");
+  assert.equal(applied, true);
+  assert.ok(badgeRow);
+  assert.equal(badgeRow.parentElement, actions);
+  assert.equal(badgeRow.previousElementSibling, followWrap);
+  assert.equal(badgeRow.nextElementSibling, moreWrap);
 });
 
 test("parseProfileData reads mutual markers and counts from hover-card text", () => {
@@ -716,6 +813,28 @@ test("handleTimelinePayload stores profiles from timeline responses", async () =
   assert.equal(annotator.stats.liveAuthors, 1);
   assert.equal(annotator.stats.timelineResponsesSeen, 1);
   assert.equal(annotator.stats.timelineProfilesExtracted, 1);
+});
+
+test("handleLocationChange schedules a rescan when x.com route changes", async () => {
+  const dom = new JSDOM(`<body></body>`, {
+    url: "https://x.com/home",
+    pretendToBeVisual: true
+  });
+  const { TimelineAnnotator } = content.__test;
+  const annotator = new TimelineAnnotator(createChromeStub(), dom.window.document, dom.window);
+  let rescanCalls = 0;
+
+  annotator.rescan = async (forceRefresh) => {
+    assert.equal(forceRefresh, true);
+    rescanCalls += 1;
+  };
+
+  annotator.lastKnownUrl = "https://x.com/home";
+  dom.reconfigure({ url: "https://x.com/chyni/followers" });
+  annotator.handleLocationChange();
+
+  await new Promise((resolve) => dom.window.setTimeout(resolve, 520));
+  assert.equal(rescanCalls > 0, true);
 });
 
 test("getAnnotationVariant marks one-way followed-by accounts", () => {

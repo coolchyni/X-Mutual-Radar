@@ -9,7 +9,7 @@
   const RESPONSE_SOURCE = "x-mutual-bridge";
   const LOOKUP_USERS_TYPE = "LOOKUP_USERS";
   const LOOKUP_USERS_RESULT_TYPE = "LOOKUP_USERS_RESULT";
-  const ARTICLE_SELECTOR = 'article[data-testid="tweet"]';
+  const STORE_HOST_SELECTOR = 'article[data-testid="tweet"], [data-testid="UserCell"], [data-testid="cellInnerDiv"]';
   const USERS_MODULE_ID = "897618";
 
   let webpackRequire = null;
@@ -69,7 +69,7 @@
       return storeRef;
     }
 
-    const candidates = document.querySelectorAll(ARTICLE_SELECTOR);
+    const candidates = document.querySelectorAll(STORE_HOST_SELECTOR);
     for (const candidate of candidates) {
       const store = findStoreFromElement(candidate);
       if (store) {

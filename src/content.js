@@ -16,6 +16,8 @@
   const BADGE_SELECTOR = ".x-mutual-badge";
   const BADGE_ROW_SELECTOR = ".x-mutual-badge-row";
   const TOP_RIGHT_ANCHOR_CLASS = "x-mutual-top-right-anchor";
+  const USER_CELL_ACTION_ANCHOR_CLASS = "x-mutual-user-cell-anchor";
+  const USER_CELL_BADGE_ROW_CLASS = "x-mutual-user-cell-badge-row";
   const ACTION_CONTROL_SELECTOR = [
     '[data-testid="reply"]',
     '[data-testid="retweet"]',
@@ -44,6 +46,8 @@
   const FOLLOWS_YOU_REGEX = /Follows you|关注了你|あなたをフォロー/i;
   const USER_CELL_SELECTOR = '[data-testid="UserCell"], [data-testid="cellInnerDiv"]';
   const RELATION_ACTION_REGEX = /关注|正在关注|回关|フォロー|フォロー中|Follow|Following|Follow back/i;
+  const RETRY_LIMIT = 8;
+  const RELATION_LIST_PATH_REGEX = /\/(followers|following|verified[_-]followers|search|members|followers_you_follow)(?:\/|$)/i;
 
   function createPointerLikeEvent(win, eventName, init) {
     const PointerCtor = win.PointerEvent || win.MouseEvent;
@@ -409,9 +413,10 @@
       badgeRow.remove();
     }
 
-    const topRightAnchors = article.querySelectorAll(`.${TOP_RIGHT_ANCHOR_CLASS}`);
+    const topRightAnchors = article.querySelectorAll(`.${TOP_RIGHT_ANCHOR_CLASS}, .${USER_CELL_ACTION_ANCHOR_CLASS}`);
     for (const anchor of topRightAnchors) {
       anchor.classList.remove(TOP_RIGHT_ANCHOR_CLASS);
+      anchor.classList.remove(USER_CELL_ACTION_ANCHOR_CLASS);
     }
   }
 
@@ -450,6 +455,43 @@
       default:
         return "";
     }
+  }
+
+  function isRelationshipListItem(article) {
+    if (!article || !(article.matches && article.matches(USER_CELL_SELECTOR))) {
+      return false;
+    }
+
+    const pathname = article.ownerDocument && article.ownerDocument.defaultView
+      ? article.ownerDocument.defaultView.location.pathname || ""
+      : "";
+
+    return RELATION_LIST_PATH_REGEX.test(pathname);
+  }
+
+  function scheduleArticleRetry(annotator, article, delay) {
+    const retryCount = Number(article.dataset.xMutualRetryCount || "0");
+    if (retryCount >= RETRY_LIMIT) {
+      article.dataset.xMutualProcessed = "true";
+      return false;
+    }
+
+    article.dataset.xMutualProcessed = "pending";
+    article.dataset.xMutualRetryCount = String(retryCount + 1);
+    const retryId = annotator.window.setTimeout(() => {
+      if (!article.isConnected) {
+        return;
+      }
+
+      delete article.dataset.xMutualProcessed;
+      annotator.articleQueue.add(article);
+      void annotator.flushQueue();
+    }, delay);
+    if (retryId && typeof retryId === "object" && typeof retryId.unref === "function") {
+      retryId.unref();
+    }
+
+    return true;
   }
 
   function findTopRightActionGroup(article) {
@@ -506,11 +548,12 @@
   }
 
   function findUserCellActionAnchor(article) {
-    if (!article || !(article.matches && article.matches(USER_CELL_SELECTOR))) {
+    if (!isRelationshipListItem(article)) {
       return null;
     }
 
-    const actionButton = Array.from(article.querySelectorAll("button[aria-label]")).find((button) => {
+    const actionButtons = Array.from(article.querySelectorAll("button[aria-label]"));
+    const actionButton = actionButtons.find((button) => {
       const label = button.getAttribute("aria-label") || "";
       return RELATION_ACTION_REGEX.test(label);
     });
@@ -519,10 +562,56 @@
       return null;
     }
 
+    const moreButton = actionButtons.find((button) => {
+      const label = button.getAttribute("aria-label") || "";
+      return /更多|More|さらに表示/i.test(label);
+    });
+
+    let actionContainer = actionButton.parentElement;
+    let current = actionContainer;
+    while (current && current !== article && current.parentElement) {
+      const buttonCount = current.parentElement.querySelectorAll("button").length;
+      if (buttonCount >= 2 && buttonCount <= TOP_RIGHT_GROUP_BUTTON_LIMIT) {
+        actionContainer = current.parentElement;
+        break;
+      }
+      if (buttonCount > TOP_RIGHT_GROUP_BUTTON_LIMIT) {
+        break;
+      }
+      current = current.parentElement;
+    }
+
     return {
-      node: actionButton.parentElement,
-      beforeNode: actionButton
+      node: actionContainer,
+      afterNode: actionButton.parentElement.parentElement === actionContainer
+        ? actionButton.parentElement
+        : actionButton.parentElement,
+      beforeNode: moreButton && moreButton.parentElement && moreButton.parentElement.parentElement === actionContainer
+        ? moreButton.parentElement
+        : moreButton && moreButton.parentElement === actionContainer
+          ? moreButton
+          : null,
+      anchorClass: USER_CELL_ACTION_ANCHOR_CLASS
     };
+  }
+
+  function findUserCellHeaderAnchor(article) {
+    if (!isRelationshipListItem(article)) {
+      return null;
+    }
+
+    const actionAnchor = findUserCellActionAnchor(article);
+    if (actionAnchor && actionAnchor.node && actionAnchor.node.parentElement && actionAnchor.node.parentElement !== article) {
+      return actionAnchor.node.parentElement;
+    }
+
+    const candidateLinks = Array.from(article.querySelectorAll('a[href^="/"][role="link"], a[href^="https://x.com/"][role="link"]'));
+    const textLink = candidateLinks.find((link) => /@/.test(link.textContent || ""));
+    if (textLink) {
+      return textLink.closest("div") || textLink;
+    }
+
+    return null;
   }
 
   function findBadgeAnchor(article, preferredPlacement) {
@@ -544,8 +633,9 @@
     if (preferredPlacement === "top_right" && topRightGroup) {
       return {
         node: topRightGroup,
-        beforeNode: findTopRightInsertTarget(topRightGroup),
-        placement: "top_right"
+        afterNode: findTopRightInsertTarget(topRightGroup),
+        placement: "top_right",
+        anchorClass: TOP_RIGHT_ANCHOR_CLASS
       };
     }
 
@@ -593,7 +683,15 @@
       };
     }
 
-    // Specifically for UserCell items without User-Name testid
+    const userCellHeader = findUserCellHeaderAnchor(article);
+    if (userCellHeader) {
+      return {
+        node: userCellHeader,
+        placement: "header"
+      };
+    }
+
+    // Specifically for items without User-Name testid
     const userLink = article.querySelector('a[href^="/"][role="link"], a[href^="https://x.com/"][role="link"]');
     if (userLink) {
       return {
@@ -639,8 +737,13 @@
     const anchor = findBadgeAnchor(article, preferredPlacement);
     const anchorNode = anchor && anchor.node;
     const anchorBeforeNode = anchor && anchor.beforeNode;
+    const anchorAfterNode = anchor && anchor.afterNode;
+    const anchorClass = anchor && anchor.anchorClass;
     const placement = anchor && anchor.placement ? anchor.placement : preferredPlacement;
     row.dataset.placement = placement;
+    if (anchorClass === USER_CELL_ACTION_ANCHOR_CLASS) {
+      row.classList.add(USER_CELL_BADGE_ROW_CLASS);
+    }
 
     if (placement === "corner" || placement === "top_right") {
       if (placement === "top_right" && (!anchorNode || anchorNode === article)) {
@@ -648,21 +751,32 @@
       }
 
       if (anchorNode && anchorNode !== article && anchorNode.parentNode) {
-        anchorNode.classList.add(TOP_RIGHT_ANCHOR_CLASS);
-        if (anchorBeforeNode && anchorBeforeNode.parentNode === anchorNode) {
-          anchorNode.insertBefore(row, anchorBeforeNode);
+        anchorNode.classList.add(anchorClass || TOP_RIGHT_ANCHOR_CLASS);
+        
+        // Always try to prepend to be the first child (far left in row layout)
+        if (anchorClass === USER_CELL_ACTION_ANCHOR_CLASS) {
+          if (anchorAfterNode && anchorAfterNode.parentNode === anchorNode) {
+            anchorNode.insertBefore(row, anchorAfterNode);
+          } else {
+            anchorNode.prepend(row);
+          }
         } else {
-          anchorNode.insertBefore(row, anchorNode.firstChild);
+          // For tweets or fallback placements
+          if (anchorBeforeNode && anchorBeforeNode.parentNode === anchorNode) {
+            anchorNode.insertBefore(row, anchorBeforeNode);
+          } else if (anchorAfterNode && anchorAfterNode.parentNode === anchorNode) {
+            anchorNode.insertBefore(row, anchorAfterNode);
+          } else {
+            anchorNode.prepend(row);
+          }
         }
       } else {
-        article.appendChild(row);
+        article.prepend(row);
       }
     } else if (anchorNode && anchorNode !== article && anchorNode.parentNode) {
       anchorNode.insertAdjacentElement("afterend", row);
-    } else if (article.firstChild) {
-      article.insertBefore(row, article.firstChild);
     } else {
-      article.appendChild(row);
+      article.prepend(row);
     }
 
     return row;
@@ -1230,9 +1344,13 @@
       this.profileStore = new Map();
       this.observer = null;
       this.boundWindowMessageHandler = this.handleWindowMessage.bind(this);
+      this.boundLocationChangeHandler = this.handleLocationChange.bind(this);
       this.pendingBridgeLookups = new Map();
       this.inflightHandleLookups = new Map();
       this.lookupRequestId = 0;
+      this.lastKnownUrl = win.location.href;
+      this.locationPollId = null;
+      this.pendingRescanTimeouts = new Set();
       this.stats = {
         scannedArticles: 0,
         highlightedArticles: 0,
@@ -1258,6 +1376,7 @@
       this.config = shared.mergeConfig(await this.chrome.storage.sync.get(shared.DEFAULT_CONFIG));
       this.observeStorage();
       this.observeMessages();
+      this.installNavigationObserver();
       this.installObserver();
       this.enqueueArticles(this.document.querySelectorAll(ITEM_SELECTOR), true);
     }
@@ -1415,6 +1534,48 @@
       });
     }
 
+    installNavigationObserver() {
+      this.window.addEventListener("popstate", this.boundLocationChangeHandler);
+      this.window.addEventListener("hashchange", this.boundLocationChangeHandler);
+      this.locationPollId = this.window.setInterval(() => {
+        this.handleLocationChange();
+      }, 300);
+      if (this.locationPollId && typeof this.locationPollId === "object" && typeof this.locationPollId.unref === "function") {
+        this.locationPollId.unref();
+      }
+    }
+
+    handleLocationChange() {
+      const nextUrl = this.window.location.href;
+      if (nextUrl === this.lastKnownUrl) {
+        return;
+      }
+
+      this.lastKnownUrl = nextUrl;
+      if (!isSupportedXPath(nextUrl)) {
+        return;
+      }
+
+      for (const timeoutId of this.pendingRescanTimeouts) {
+        this.window.clearTimeout(timeoutId);
+      }
+      this.pendingRescanTimeouts.clear();
+
+      const schedule = (delay) => {
+        const timeoutId = this.window.setTimeout(() => {
+          this.pendingRescanTimeouts.delete(timeoutId);
+          void this.rescan(true);
+        }, delay);
+        if (timeoutId && typeof timeoutId === "object" && typeof timeoutId.unref === "function") {
+          timeoutId.unref();
+        }
+        this.pendingRescanTimeouts.add(timeoutId);
+      };
+
+      schedule(80);
+      schedule(420);
+    }
+
     installObserver() {
       this.observer = new MutationObserver((records) => {
         const articles = [];
@@ -1488,9 +1649,19 @@
     }
 
     async processArticle(article, forceRefresh) {
+      // Avoid duplicate processing if this is a container (like cellInnerDiv) wrapping a UserCell
+      if (article.matches('[data-testid="cellInnerDiv"]') && article.querySelector('[data-testid="UserCell"]')) {
+        article.dataset.xMutualProcessed = "true";
+        return;
+      }
+
       const handle = extractHandleFromArticle(article);
       if (!handle) {
-        article.dataset.xMutualProcessed = "true";
+        if (scheduleArticleRetry(this, article, 180)) {
+          this.refreshCounters();
+          return;
+        }
+
         removeAnnotation(article);
         this.refreshCounters();
         return;
@@ -1512,19 +1683,7 @@
           this.config.language
         );
         if (!applied) {
-          article.dataset.xMutualProcessed = "pending";
-          const retryId = this.window.setTimeout(() => {
-            if (!article.isConnected) {
-              return;
-            }
-
-            delete article.dataset.xMutualProcessed;
-            this.articleQueue.add(article);
-            void this.flushQueue();
-          }, 120);
-          if (retryId && typeof retryId === "object" && typeof retryId.unref === "function") {
-            retryId.unref();
-          }
+          scheduleArticleRetry(this, article, 120);
           this.refreshCounters();
           return;
         }
@@ -1533,6 +1692,7 @@
       }
 
       article.dataset.xMutualProcessed = "true";
+      article.dataset.xMutualRetryCount = "0";
       article.dataset.xMutualHandle = handle;
       article.dataset.xMutualReason = match.reason || "";
       this.refreshCounters();

@@ -58,9 +58,27 @@ article.x-mutual-match.x-mutual-one-way-followed-by {
 
 .x-mutual-top-right-anchor {
   display: flex !important;
+  flex-direction: row !important;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: nowrap;
   gap: 8px;
+}
+
+.x-mutual-user-cell-anchor {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.x-mutual-user-cell-badge-row {
+  position: static;
+  transform: none;
+  margin: 0;
+  z-index: 2;
 }
 
 .x-mutual-badge {
@@ -68,9 +86,11 @@ article.x-mutual-match.x-mutual-one-way-followed-by {
   z-index: 1;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   max-width: 100%;
-  padding: 6px 10px;
+  min-width: fit-content;
+  padding: 6px 12px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 999px;
   background: linear-gradient(135deg, rgba(255, 122, 24, 0.96), rgba(255, 186, 74, 0.92));
@@ -78,8 +98,9 @@ article.x-mutual-match.x-mutual-one-way-followed-by {
   font-size: 12px;
   line-height: 1.25;
   font-weight: 650;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   white-space: nowrap;
+  overflow: visible;
   box-shadow: 0 6px 14px rgba(255, 122, 24, 0.2);
   backdrop-filter: blur(10px);
 }
