@@ -21,16 +21,14 @@
     badgePositionTitle: document.getElementById("badge-position-title"),
     badgePositionTopRightOption: document.getElementById("badge-position-top-right-option"),
     badgePositionHeaderOption: document.getElementById("badge-position-header-option"),
+    badgeFontSizeSelect: document.getElementById("badge-font-size-select"),
+    badgeFontSizeTitle: document.getElementById("badge-font-size-title"),
     statsTitle: document.getElementById("stats-title"),
     pageStatus: document.getElementById("page-status"),
     scannedLabel: document.getElementById("scanned-label"),
     scannedCount: document.getElementById("scanned-count"),
-    highlightedLabel: document.getElementById("highlighted-label"),
-    highlightedCount: document.getElementById("highlighted-count"),
     liveAuthorsLabel: document.getElementById("live-authors-label"),
     liveCount: document.getElementById("live-count"),
-    insufficientLabel: document.getElementById("insufficient-label"),
-    insufficientCount: document.getElementById("insufficient-count"),
     notMutualLabel: document.getElementById("not-mutual-label"),
     notMutualCount: document.getElementById("not-mutual-count")
   };
@@ -70,11 +68,10 @@
     els.badgePositionTitle.textContent = shared.t(language, "badgePositionTitle");
     els.badgePositionTopRightOption.textContent = shared.t(language, "badgePositionTopRight");
     els.badgePositionHeaderOption.textContent = shared.t(language, "badgePositionHeader");
+    els.badgeFontSizeTitle.textContent = shared.t(language, "badgeFontSizeTitle");
     els.statsTitle.textContent = shared.t(language, "statsTitle");
     els.scannedLabel.textContent = shared.t(language, "scannedPosts");
-    els.highlightedLabel.textContent = shared.t(language, "highlightedPosts");
     els.liveAuthorsLabel.textContent = shared.t(language, "liveAuthors");
-    els.insufficientLabel.textContent = shared.t(language, "insufficientData");
     els.notMutualLabel.textContent = shared.t(language, "notMutual");
 
     els.languageSelect.options[0].textContent = shared.t(language, "languageEnglish");
@@ -87,6 +84,7 @@
     els.languageSelect.value = shared.normalizeLanguage(config.language);
     els.enabledToggle.checked = Boolean(config.enabled);
     els.showBadgeNumbersToggle.checked = Boolean(config.showBadgeNumbers);
+    els.badgeFontSizeSelect.value = config.badgeFontSize || "12";
     els.showBadgeLabelToggle.checked = Boolean(config.showBadgeLabel);
     els.highlightPostsToggle.checked = Boolean(config.highlightPosts);
     els.badgePositionSelect.value = shared.normalizeBadgePosition(config.badgePosition);
@@ -96,18 +94,14 @@
     if (!payload || !payload.ok || !payload.supported) {
       els.pageStatus.textContent = shared.t(language, "pageStatusDisconnected");
       els.scannedCount.textContent = "-";
-      els.highlightedCount.textContent = "-";
       els.liveCount.textContent = "-";
-      els.insufficientCount.textContent = "-";
       els.notMutualCount.textContent = "-";
       return;
     }
 
     els.pageStatus.textContent = shared.t(language, "pageStatusConnected");
     els.scannedCount.textContent = String(payload.stats.scannedArticles || 0);
-    els.highlightedCount.textContent = String(payload.stats.highlightedArticles || 0);
     els.liveCount.textContent = String(payload.stats.liveAuthors || 0);
-    els.insufficientCount.textContent = String(payload.stats.insufficientArticles || 0);
     els.notMutualCount.textContent = String(payload.stats.notMutualArticles || 0);
   }
 
@@ -153,6 +147,11 @@
 
   els.badgePositionSelect.addEventListener("change", async () => {
     await saveConfig({ badgePosition: els.badgePositionSelect.value });
+    await refreshStats();
+  });
+
+  els.badgeFontSizeSelect.addEventListener("change", async () => {
+    await saveConfig({ badgeFontSize: els.badgeFontSizeSelect.value });
     await refreshStats();
   });
 

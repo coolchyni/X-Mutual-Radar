@@ -794,7 +794,7 @@
     return row;
   }
 
-  function applyAnnotation(article, profile, match, variant, showBadgeNumbers, showBadgeLabel, highlightPosts, badgePosition, language) {
+  function applyAnnotation(article, profile, match, variant, showBadgeNumbers, showBadgeLabel, badgeFontSize, highlightPosts, badgePosition, language) {
     removeAnnotation(article);
 
     if (highlightPosts) {
@@ -826,6 +826,14 @@
       badge.classList.add("x-mutual-badge-dot-only");
     } else if (showBadgeLabel && showBadgeNumbers && match && Number.isFinite(match.ratio)) {
       badge.classList.add("has-label");
+    }
+
+    if (badgeFontSize) {
+      badge.style.fontSize = `${badgeFontSize}px`;
+      const rateSpan = badge.querySelector(".x-mutual-badge-rate");
+      if (rateSpan) {
+        rateSpan.style.fontSize = `${badgeFontSize}px`;
+      }
     }
     badge.dataset.tooltip = createTooltipText(profile, match, language);
     attachTooltipHandlers(badge);
@@ -1697,6 +1705,7 @@
           annotationVariant,
           this.config.showBadgeNumbers,
           this.config.showBadgeLabel,
+          this.config.badgeFontSize,
           this.config.highlightPosts,
           this.config.badgePosition,
           this.config.language
