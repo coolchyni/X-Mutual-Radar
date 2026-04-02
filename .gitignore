@@ -7,3 +7,4 @@ release/*.zip
 *.crx
 assets/screen/*
 assets/screens/*
+scripts/*
