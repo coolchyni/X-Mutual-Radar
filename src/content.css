@@ -1,0 +1,115 @@
+article.x-mutual-match {
+  position: relative !important;
+  outline: 1.5px solid #ff7a18 !important;
+  outline-offset: 2px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 122, 24, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(255, 122, 24, 0.05), rgba(255, 189, 89, 0.02)) !important;
+  border-radius: 18px;
+  box-shadow: 0 0 0 1px rgba(255, 122, 24, 0.22), 0 10px 22px rgba(255, 122, 24, 0.12);
+}
+
+article.x-mutual-has-corner-badge {
+  position: relative !important;
+  isolation: isolate;
+}
+
+article.x-mutual-match.x-mutual-one-way-following {
+  outline-color: #2dd4bf !important;
+  background:
+    radial-gradient(circle at top right, rgba(45, 212, 191, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(45, 212, 191, 0.06), rgba(20, 184, 166, 0.02)) !important;
+  box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.22), 0 10px 22px rgba(20, 184, 166, 0.12);
+}
+
+article.x-mutual-match.x-mutual-one-way-followed-by {
+  outline-color: #60a5fa !important;
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.12), transparent 34%),
+    linear-gradient(135deg, rgba(96, 165, 250, 0.06), rgba(59, 130, 246, 0.02)) !important;
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.22), 0 10px 22px rgba(59, 130, 246, 0.12);
+}
+
+.x-mutual-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 4px;
+}
+
+.x-mutual-badge-row[data-placement="corner"] {
+  position: absolute;
+  top: 10px;
+  right: 76px;
+  z-index: 12;
+  justify-content: flex-end;
+  max-width: calc(100% - 180px);
+  margin: 0;
+}
+
+.x-mutual-badge-row[data-placement="top_right"] {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  z-index: 12;
+  justify-content: flex-end;
+  max-width: calc(100% - 96px);
+  margin: 0;
+}
+
+.x-mutual-badge {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 122, 24, 0.96), rgba(255, 186, 74, 0.92));
+  color: #171717;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px rgba(255, 122, 24, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.x-mutual-badge[data-variant="one_way_following"] {
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.96), rgba(153, 246, 228, 0.92));
+  box-shadow: 0 6px 14px rgba(45, 212, 191, 0.18);
+}
+
+.x-mutual-badge[data-variant="one_way_followed_by"] {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.96), rgba(147, 197, 253, 0.92));
+  box-shadow: 0 6px 14px rgba(96, 165, 250, 0.18);
+}
+
+.x-mutual-badge[data-tooltip] {
+  cursor: help;
+}
+
+.x-mutual-badge:hover {
+  z-index: 10001;
+}
+
+.x-mutual-floating-tooltip {
+  position: absolute;
+  min-width: 220px;
+  max-width: 280px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(17, 17, 17, 0.96);
+  color: #f7f7f7;
+  white-space: pre-line;
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+  z-index: 2147483647;
+  pointer-events: none;
+  text-align: left;
+}

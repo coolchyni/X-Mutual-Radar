@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "X Mutual Radar"
+  },
+  "extDescription": {
+    "message": "Label mutual and one-way follow relationships on x.com and optionally show the following / followers rate."
+  },
+  "actionTitle": {
+    "message": "X Mutual Radar"
+  }
+}

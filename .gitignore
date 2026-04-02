@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+__pycache__/
+output/
+tmp/
+release/*.zip
+*.crx
+assets/screen/*
+assets/screens/*

@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "X互关雷达"
+  },
+  "extDescription": {
+    "message": "在 x.com 页面标记互关和单向关注关系，并可选择显示 following / followers 关注率。"
+  },
+  "actionTitle": {
+    "message": "X互关雷达"
+  }
+}

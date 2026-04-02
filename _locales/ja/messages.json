@@ -1,0 +1,11 @@
+{
+  "extName": {
+    "message": "X相互フォローレーダー"
+  },
+  "extDescription": {
+    "message": "x.com 上の相互フォローと片方向フォローを表示し、following / followers 比率も任意で表示できます。"
+  },
+  "actionTitle": {
+    "message": "X相互フォローレーダー"
+  }
+}
