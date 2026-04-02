@@ -461,11 +461,11 @@ test("applyAnnotation anchors top-right badges after the top-right button group"
 
   const badgeRow = article.querySelector(".x-mutual-badge-row");
   const group = article.querySelector(".top-right-actions");
+  const moreWrapper = article.querySelector('[data-testid="caret"]').parentElement;
   assert.ok(badgeRow);
   assert.equal(badgeRow.dataset.placement, "top_right");
   assert.equal(badgeRow.parentElement, group);
-  // Using prepend logic: badgeRow is now the first child
-  assert.equal(group.firstElementChild, badgeRow);
+  assert.equal(badgeRow.nextElementSibling, moreWrapper);
 });
 
 test("applyAnnotation appends the top-right badge after the more button wrapper", () => {
@@ -516,8 +516,7 @@ test("applyAnnotation appends the top-right badge after the more button wrapper"
   assert.ok(badgeRow);
   assert.equal(badgeRow.dataset.placement, "top_right");
   assert.equal(badgeRow.parentElement, group);
-  // Using prepend logic: badgeRow is now the first child
-  assert.equal(group.firstElementChild, badgeRow);
+  assert.equal(badgeRow.nextElementSibling, moreWrapper);
   assert.equal(article.classList.contains("x-mutual-top-right-replaced"), false);
 });
 
@@ -596,10 +595,13 @@ test("applyAnnotation places user-cell badges after the follow action button", (
   );
 
   const actionWrap = article.querySelector(".action-wrap");
+  const followBtn = actionWrap.querySelector("button");
   const badgeRow = article.querySelector(".x-mutual-badge-row");
   assert.equal(applied, true);
   assert.ok(badgeRow);
   assert.equal(badgeRow.parentElement, actionWrap);
+  // Reverted to insertBefore logic: badgeRow is now first
+  assert.equal(badgeRow.nextElementSibling, followBtn);
   assert.equal(badgeRow.classList.contains("x-mutual-user-cell-badge-row"), true);
   assert.equal(actionWrap.classList.contains("x-mutual-user-cell-anchor"), true);
 });
@@ -651,7 +653,7 @@ test("applyAnnotation places user-cell badges between the follow button and more
   assert.equal(applied, true);
   assert.ok(badgeRow);
   assert.equal(badgeRow.parentElement, actions);
-  // Using prepend logic: badgeRow is now the first child
+  // Reverted to insertBefore(followWrap) logic: badgeRow is the first child
   assert.equal(badgeRow.nextElementSibling, followWrap);
   assert.equal(followWrap.nextElementSibling, moreWrap);
 });
