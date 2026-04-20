@@ -12,9 +12,11 @@
   const NAVIGATION_CHANGED_TYPE = "NAVIGATION_CHANGED";
   const STORE_HOST_SELECTOR = 'article[data-testid="tweet"], [data-testid="UserCell"], [data-testid="cellInnerDiv"]';
   const USERS_MODULE_ID = "897618";
+  const STATE_SCAN_NODE_LIMIT = 30000;
 
   let webpackRequire = null;
   let storeRef = null;
+  let usersModuleRef = null;
   let lastNavigationUrl = window.location.href;
 
   function normalizeHandle(handle) {
@@ -84,6 +86,10 @@
   }
 
   function getUsersModule() {
+    if (usersModuleRef && typeof usersModuleRef.selectByScreenName === "function") {
+      return usersModuleRef;
+    }
+
     const req = getWebpackRequire();
     if (!req) {
       return null;
@@ -91,48 +97,157 @@
 
     try {
       const module = req(USERS_MODULE_ID);
-      return module && module.ZP ? module.ZP : null;
+      if (module && module.ZP && typeof module.ZP.selectByScreenName === "function") {
+        usersModuleRef = module.ZP;
+        return usersModuleRef;
+      }
     } catch (error) {
-      return null;
+      // X deploys can change module ids, so fall through to cache discovery.
     }
+
+    const cache = req.c || {};
+    for (const cacheEntry of Object.values(cache)) {
+      const exports = cacheEntry && cacheEntry.exports;
+      const candidates = [
+        exports,
+        exports && exports.ZP,
+        exports && exports.default
+      ];
+
+      for (const candidate of candidates) {
+        if (candidate && typeof candidate.selectByScreenName === "function") {
+          usersModuleRef = candidate;
+          return usersModuleRef;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function pickUserValue(user, flatKey, legacyKey) {
+    if (!user || typeof user !== "object") {
+      return undefined;
+    }
+
+    if (typeof user[flatKey] !== "undefined" && user[flatKey] !== null) {
+      return user[flatKey];
+    }
+
+    if (user.legacy && typeof user.legacy[legacyKey || flatKey] !== "undefined" && user.legacy[legacyKey || flatKey] !== null) {
+      return user.legacy[legacyKey || flatKey];
+    }
+
+    return undefined;
   }
 
   function buildProfile(handle, user) {
-    const normalizedHandle = normalizeHandle(handle || user && user.screen_name);
+    const relationship = user && (user.relationship_perspectives || user.relationship_perspective || {});
+    const normalizedHandle = normalizeHandle(handle || pickUserValue(user, "screen_name"));
     if (!normalizedHandle || !user) {
       return null;
     }
 
+    const followingCount = pickUserValue(user, "friends_count");
+    const followerCount = pickUserValue(user, "followers_count");
+
     return {
       handle: normalizedHandle,
-      isFollowing: Boolean(user.following),
-      followsYou: Boolean(user.followed_by),
-      followingCount: Number.isFinite(Number(user.friends_count)) ? Number(user.friends_count) : null,
-      followerCount: Number.isFinite(Number(user.followers_count)) ? Number(user.followers_count) : null,
+      isFollowing: Boolean(user.following ?? relationship.following),
+      followsYou: Boolean(user.followed_by ?? relationship.followed_by),
+      followingCount: Number.isFinite(Number(followingCount)) ? Number(followingCount) : null,
+      followerCount: Number.isFinite(Number(followerCount)) ? Number(followerCount) : null,
       source: "page_store_selector",
       fetchedAt: Date.now()
     };
   }
 
+  function findUsersInState(state, handles) {
+    const targets = new Set(handles.map((handle) => normalizeHandle(handle)).filter(Boolean));
+    const found = new Map();
+    const seen = new WeakSet();
+    let visited = 0;
+
+    function visit(node) {
+      if (!node || typeof node !== "object" || found.size >= targets.size || visited >= STATE_SCAN_NODE_LIMIT) {
+        return;
+      }
+
+      if (seen.has(node)) {
+        return;
+      }
+
+      seen.add(node);
+      visited += 1;
+
+      const handle = normalizeHandle(pickUserValue(node, "screen_name"));
+      if (handle && targets.has(handle) && !found.has(handle)) {
+        found.set(handle, node);
+      }
+
+      if (Array.isArray(node)) {
+        for (const item of node) {
+          visit(item);
+        }
+        return;
+      }
+
+      for (const value of Object.values(node)) {
+        visit(value);
+      }
+    }
+
+    visit(state);
+    return found;
+  }
+
   function lookupProfiles(handles) {
     const usersModule = getUsersModule();
     const store = getStore();
-    if (!usersModule || !store || typeof usersModule.selectByScreenName !== "function") {
+    if (!store) {
       return [];
     }
 
     const state = store.getState();
-    return handles
+    const normalizedHandles = handles
       .map((handle) => normalizeHandle(handle))
       .filter(Boolean)
-      .map((handle) => {
+      .filter((handle, index, array) => array.indexOf(handle) === index);
+
+    const profiles = [];
+    const missingHandles = [];
+
+    for (const handle of normalizedHandles) {
+      let profile = null;
+      if (usersModule && typeof usersModule.selectByScreenName === "function") {
         try {
-          return buildProfile(handle, usersModule.selectByScreenName(state, handle));
+          profile = buildProfile(handle, usersModule.selectByScreenName(state, handle));
         } catch (error) {
-          return null;
+          profile = null;
         }
-      })
-      .filter(Boolean);
+      }
+
+      if (profile) {
+        profiles.push(profile);
+      } else {
+        missingHandles.push(handle);
+      }
+    }
+
+    if (missingHandles.length > 0) {
+      const stateUsers = findUsersInState(state, missingHandles);
+      for (const handle of missingHandles) {
+        const profile = buildProfile(handle, stateUsers.get(handle));
+        if (profile) {
+          profiles.push({
+            ...profile,
+            source: "page_store_scan"
+          });
+        }
+      }
+    }
+
+    return profiles;
   }
 
   function dispatchNavigationChanged(reason) {
