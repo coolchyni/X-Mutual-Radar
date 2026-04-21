@@ -3,6 +3,9 @@ const DEFAULT_CONFIG = {
   language: "en",
   badgePosition: "corner",
   showBadgeNumbers: true,
+  showBadgeLabel: true,
+  showAllFollowRates: false,
+  badgeFontSize: "12",
   ratioTolerancePct: 30,
   scanScope: "home_timeline"
 };

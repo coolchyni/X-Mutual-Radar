@@ -13,6 +13,8 @@
     enabledTitle: document.getElementById("enabled-title"),
     showBadgeNumbersToggle: document.getElementById("show-badge-numbers-toggle"),
     showBadgeNumbersTitle: document.getElementById("show-badge-numbers-title"),
+    showAllFollowRatesToggle: document.getElementById("show-all-follow-rates-toggle"),
+    showAllFollowRatesTitle: document.getElementById("show-all-follow-rates-title"),
     showBadgeLabelToggle: document.getElementById("show-badge-label-toggle"),
     showBadgeLabelTitle: document.getElementById("show-badge-label-title"),
     badgePositionSelect: document.getElementById("badge-position-select"),
@@ -35,6 +37,7 @@
     els.languageLabel.textContent = shared.t(language, "languageLabel");
     els.enabledTitle.textContent = shared.t(language, "enabledTitle");
     els.showBadgeNumbersTitle.textContent = shared.t(language, "showBadgeNumbersTitle");
+    els.showAllFollowRatesTitle.textContent = shared.t(language, "showAllFollowRatesTitle");
     els.showBadgeLabelTitle.textContent = shared.t(language, "showBadgeLabelTitle");
     els.badgePositionTitle.textContent = shared.t(language, "badgePositionTitle");
     els.badgePositionTopRightOption.textContent = shared.t(language, "badgePositionTopRight");
@@ -51,6 +54,7 @@
     els.languageSelect.value = shared.normalizeLanguage(config.language);
     els.enabledToggle.checked = Boolean(config.enabled);
     els.showBadgeNumbersToggle.checked = Boolean(config.showBadgeNumbers);
+    els.showAllFollowRatesToggle.checked = Boolean(config.showAllFollowRates);
     els.badgeFontSizeSelect.value = config.badgeFontSize || "12";
     els.showBadgeLabelToggle.checked = Boolean(config.showBadgeLabel);
     els.badgePositionSelect.value = shared.normalizeBadgePosition(config.badgePosition);
@@ -74,6 +78,10 @@
 
   els.showBadgeNumbersToggle.addEventListener("change", async () => {
     await saveConfig({ showBadgeNumbers: els.showBadgeNumbersToggle.checked });
+  });
+
+  els.showAllFollowRatesToggle.addEventListener("change", async () => {
+    await saveConfig({ showAllFollowRates: els.showAllFollowRatesToggle.checked });
   });
 
   els.showBadgeLabelToggle.addEventListener("change", async () => {

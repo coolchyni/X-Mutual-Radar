@@ -418,7 +418,7 @@
     }
   }
 
-  function getAnnotationVariant(profile, match) {
+  function getAnnotationVariant(profile, match, showAllFollowRates) {
     if (match && match.shouldHighlight) {
       return "mutual";
     }
@@ -429,6 +429,10 @@
 
     if (profile && !profile.isFollowing && profile.followsYou) {
       return "one_way_followed_by";
+    }
+
+    if (showAllFollowRates && match && Number.isFinite(match.ratio)) {
+      return "follow_rate";
     }
 
     return null;
@@ -462,6 +466,8 @@
         return labelWithRate(shared.t(language, "badgeFollowing"));
       case "one_way_followed_by":
         return labelWithRate(shared.t(language, "badgeFollowedBy"));
+      case "follow_rate":
+        return labelWithRate(shared.t(language, "badgeFollowRate"));
       default:
         return "";
     }
@@ -1680,7 +1686,7 @@
 
       const profile = await this.getAuthorProfile(handle, article, forceRefresh);
       const match = shared.evaluateProfile(profile, this.config.ratioTolerancePct);
-      const annotationVariant = getAnnotationVariant(profile, match);
+      const annotationVariant = getAnnotationVariant(profile, match, this.config.showAllFollowRates);
 
       if (this.config.enabled && annotationVariant) {
         const applied = applyAnnotation(

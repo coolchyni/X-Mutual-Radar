@@ -13,6 +13,7 @@
     badgeFontSize: "12",
     showBadgeNumbers: true,
     showBadgeLabel: true,
+    showAllFollowRates: false,
     ratioTolerancePct: 30,
     scanScope: "home_timeline"
   };
@@ -37,6 +38,8 @@
       enabledHelp: "Turn off to hide page annotations",
       showBadgeNumbersTitle: "Show follow rate",
       showBadgeNumbersHelp: "Turn off to show labels only",
+      showAllFollowRatesTitle: "Show all rates",
+      showAllFollowRatesHelp: "Also label accounts without a follow relationship",
       showBadgeLabelTitle: "Show labels",
       showBadgeLabelHelp: "Turn off to hide 'Mutual' / 'Following' text",
       badgePositionTitle: "Badge position",
@@ -54,6 +57,7 @@
       badgeMutual: "Mutual",
       badgeFollowing: "Following",
       badgeFollowedBy: "Follows you",
+      badgeFollowRate: "Rate",
       relationLabel: "Relation",
       followingLabel: "Following",
       followersLabel: "Followers",
@@ -84,6 +88,8 @@
       enabledHelp: "关闭后隐藏页面标注",
       showBadgeNumbersTitle: "显示关注率",
       showBadgeNumbersHelp: "关闭后仅显示标签",
+      showAllFollowRatesTitle: "显示所有人关注率",
+      showAllFollowRatesHelp: "无关注关系也显示",
       showBadgeLabelTitle: "显示标签文字",
       showBadgeLabelHelp: "关闭后隐藏'互关'、'我关注'等文字",
       badgePositionTitle: "标签位置",
@@ -101,6 +107,7 @@
       badgeMutual: "互关",
       badgeFollowing: "我关注",
       badgeFollowedBy: "关注我",
+      badgeFollowRate: "关注率",
       relationLabel: "关系",
       followingLabel: "Following",
       followersLabel: "Followers",
@@ -131,6 +138,8 @@
       enabledHelp: "オフでページのラベルを非表示",
       showBadgeNumbersTitle: "比率を表示",
       showBadgeNumbersHelp: "オフでラベルのみ表示",
+      showAllFollowRatesTitle: "全員の比率を表示",
+      showAllFollowRatesHelp: "フォロー関係がなくても表示",
       showBadgeLabelTitle: "ラベルを表示",
       showBadgeLabelHelp: "オフで'相互'などの文字を表示しない",
       badgePositionTitle: "ラベル位置",
@@ -148,6 +157,7 @@
       badgeMutual: "相互",
       badgeFollowing: "フォロー中",
       badgeFollowedBy: "フォロー済",
+      badgeFollowRate: "比率",
       relationLabel: "関係",
       followingLabel: "フォロー中",
       followersLabel: "フォロワー",
@@ -268,6 +278,9 @@
       showBadgeLabel: overrides && Object.prototype.hasOwnProperty.call(overrides, "showBadgeLabel")
         ? Boolean(overrides.showBadgeLabel)
         : DEFAULT_CONFIG.showBadgeLabel,
+      showAllFollowRates: overrides && Object.prototype.hasOwnProperty.call(overrides, "showAllFollowRates")
+        ? Boolean(overrides.showAllFollowRates)
+        : DEFAULT_CONFIG.showAllFollowRates,
       ratioTolerancePct: clampRatioTolerance(
         overrides && Object.prototype.hasOwnProperty.call(overrides, "ratioTolerancePct")
           ? overrides.ratioTolerancePct

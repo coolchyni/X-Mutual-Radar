@@ -922,3 +922,48 @@ test("getAnnotationVariant marks one-way followed-by accounts", () => {
 
   assert.equal(variant, "one_way_followed_by");
 });
+
+test("getAnnotationVariant can show follow-rate badges for unrelated accounts", () => {
+  const profile = {
+    isFollowing: false,
+    followsYou: false
+  };
+  const match = {
+    shouldHighlight: false,
+    ratio: 1.23
+  };
+
+  assert.equal(content.__test.getAnnotationVariant(profile, match, false), null);
+  assert.equal(content.__test.getAnnotationVariant(profile, match, true), "follow_rate");
+});
+
+test("applyAnnotation renders the generic follow-rate badge", () => {
+  const dom = new JSDOM(`<article data-testid="tweet"></article>`);
+  const article = dom.window.document.querySelector("article");
+
+  content.__test.applyAnnotation(
+    article,
+    {
+      isFollowing: false,
+      followsYou: false,
+      followingCount: 1230,
+      followerCount: 1000,
+      source: "page_store_selector",
+      fetchedAt: Date.now()
+    },
+    {
+      ratio: 1.23
+    },
+    "follow_rate",
+    true,
+    true,
+    "12",
+    "header",
+    "zh_CN"
+  );
+
+  const badge = article.querySelector(".x-mutual-badge");
+  assert.ok(badge);
+  assert.equal(badge.dataset.variant, "follow_rate");
+  assert.equal(badge.textContent, "关注率 1.23");
+});

@@ -87,6 +87,7 @@ test("mergeConfig clamps ratio tolerance", () => {
   assert.equal(config.badgePosition, "top_right");
   assert.equal(config.ratioTolerancePct, 30);
   assert.equal(config.showBadgeNumbers, false);
+  assert.equal(config.showAllFollowRates, false);
 });
 
 test("normalizeBadgePosition accepts top right", () => {
@@ -101,6 +102,7 @@ test("mergeConfig keeps badge display defaults", () => {
   assert.equal(config.language, "en");
   assert.equal(config.showBadgeNumbers, true);
   assert.equal(config.showBadgeLabel, true);
+  assert.equal(config.showAllFollowRates, false);
 });
 
 test("normalizeLanguage supports english, chinese, and japanese", () => {
